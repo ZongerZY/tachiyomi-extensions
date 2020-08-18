@@ -22,11 +22,11 @@ class Mumamanhua : ParsedHttpSource() {
     override val supportsLatest: Boolean = true
 
     // 识别手机浏览器请求头信息集合(User-Agent)
-    //headers request (User-Agent)
-    //这个网站只能使用手机中的浏览器进行访问,无法使用Windows浏览器访问,原因是该网站在headers request中对手机浏览器进行了识别
-    //This website can only be accessed using the browser on the mobile phone, Cannot access using windows browser,because the website recognizes the mobile browser in the headers request
-    //在多个标头请求中添加“ User-Agent”的值，以伪造移动浏览器访问权限。添加许多内容的原因是该网站具有反网站搜寻器(爬虫)
-    //Add the value of "User-Agent" to multiple header requests to fake mobile browser access rights.The reason for adding a lot of content is that the website has a website anti-searcher
+    // headers request (User-Agent)
+    // 这个网站只能使用手机中的浏览器进行访问,无法使用Windows浏览器访问,原因是该网站在headers request中对手机浏览器进行了识别
+    // This website can only be accessed using the browser on the mobile phone, Cannot access using windows browser,because the website recognizes the mobile browser in the headers request
+    // 在多个标头请求中添加“ User-Agent”的值，以伪造移动浏览器访问权限。添加许多内容的原因是该网站具有反网站搜寻器(爬虫)
+    // Add the value of "User-Agent" to multiple header requests to fake mobile browser access rights.The reason for adding a lot of content is that the website has a website anti-searcher
     private val phone = mapOf<Int, String>(
         1 to "Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1",
         2 to "Mozilla/5.0 (Linux; Android 9; V1838A Build/PKQ1.190302.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/76.0.3809.89 Mobile Safari/537.36 T7/11.20 SP-engine/2.16.0 baiduboxapp/11.20.0.14 (Baidu; P1 9)",
@@ -71,16 +71,16 @@ class Mumamanhua : ParsedHttpSource() {
     )
 
     // 设置请求头为手机标识
-    //自定义 header request,只为了让请求信息如同使用手机中的浏览器访问一样
-    //Custom header request, just to make the request information like using the browser in the mobile phone to access
-    //对于headers request中的"User-Agent",使用随机获取,原因是如果同一个设备多次且快速的访问网站,网站会识别出请求是非法的爬虫请求(website searcher),导致设备或者改设备下的网络IP无法访问该网站
-    //For the "User-Agent" in the headers request, random acquisition is used. The reason is that if the same device visits the website multiple times and quickly, the website will recognize that the request is an illegal crawler request (website searcher), resulting in the device or the device The network IP cannot access the website
-    private var header = Headers.of(mapOf(
+    // 自定义 header request,只为了让请求信息如同使用手机中的浏览器访问一样
+    // Custom header request, just to make the request information like using the browser in the mobile phone to access
+    // 对于headers request中的"User-Agent",使用随机获取,原因是如果同一个设备多次且快速的访问网站,网站会识别出请求是非法的爬虫请求(website searcher),导致设备或者改设备下的网络IP无法访问该网站
+    // For the "User-Agent" in the headers request, random acquisition is used. The reason is that if the same device visits the website multiple times and quickly, the website will recognize that the request is an illegal crawler request (website searcher), resulting in the device or the device The network IP cannot access the website
+    private var requestHTMLHeaders = Headers.of(mapOf(
         "Cache-Control" to "max-age=0",
         "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
         "Accept-Encoding" to "",
         "Accept-Language" to "zh-CN,zh;q=0.9",
-        "User-Agent" to phone.get((1..40).random()),
+        "User-Agent" to "Mozilla/5.0 (Linux; U; Android 9; zh-cn; MI 9 SE Build/PKQ1.181121.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.141 Mobile Safari/537.36 XiaoMi/MiuiBrowser/11.8.12",
         "Upgrade-Insecure-Requests" to "1",
         "Sec-Fetch-Dest" to "document",
         "Sec-Fetch-Mode" to "navigate",
@@ -89,10 +89,21 @@ class Mumamanhua : ParsedHttpSource() {
         "Connection" to "keep-alive",
         "Host" to "www.muamh.com"
     ))
+    private var requestImageHeaders = Headers.of(mapOf(
+        "Accept" to "image/webp,image/apng,*/*;q=0.8",
+        "Accept-Encoding" to "",
+        "Accept-Language" to "zh-CN,zh;q=0.9",
+        "User-Agent" to "Mozilla/5.0 (Linux; U; Android 9; zh-cn; MI 9 SE Build/PKQ1.181121.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.141 Mobile Safari/537.36 XiaoMi/MiuiBrowser/11.8.12",
+        "Sec-Fetch-Dest" to "image",
+        "Sec-Fetch-Mode" to "no-cors",
+        "Sec-Fetch-Site" to "same-site",
+        "Connection" to "keep-alive",
+        "Host" to "pic.muamh.com"
+    ))
 
     // 点击量排序(人气)
     override fun popularMangaRequest(page: Int): Request {
-        return GET("$baseUrl/booklist?page=$page", header)
+        return GET("$baseUrl/booklist?page=$page", requestHTMLHeaders)
     }
 
     override fun popularMangaNextPageSelector(): String? = "section > a:has(img.nextb)"
@@ -106,12 +117,12 @@ class Mumamanhua : ParsedHttpSource() {
 
     // 重写访问漫画详细信息的访问方式,以添加访问头
     override fun mangaDetailsRequest(manga: SManga): Request {
-        return GET("$baseUrl" + manga.url, header)
+        return GET("$baseUrl" + manga.url, requestHTMLHeaders)
     }
 
     // 最新排序
     override fun latestUpdatesRequest(page: Int): Request {
-        return GET("$baseUrl/update?page=$page", header)
+        return GET("$baseUrl/update?page=$page", requestHTMLHeaders)
     }
 
     override fun latestUpdatesNextPageSelector(): String? = popularMangaNextPageSelector()
@@ -122,7 +133,7 @@ class Mumamanhua : ParsedHttpSource() {
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         return if (query != "") {
             val url = HttpUrl.parse("$baseUrl/search?keyword=$query&page=$page")?.newBuilder()
-            GET(url.toString(), header)
+            GET(url.toString(), requestHTMLHeaders)
         } else {
             val params = filters.map {
                 if (it is UriPartFilter) {
@@ -130,7 +141,7 @@ class Mumamanhua : ParsedHttpSource() {
                 } else ""
             }.filter { it != "" }.joinToString("")
             val url = HttpUrl.parse("$baseUrl$params&page=$page")?.newBuilder()
-            GET(url.toString(), header)
+            GET(url.toString(), requestHTMLHeaders)
         }
     }
 
@@ -176,7 +187,7 @@ class Mumamanhua : ParsedHttpSource() {
 
     // 重写访问漫画章节的访问方式,以添加访问头
     override fun chapterListRequest(manga: SManga): Request {
-        return GET("$baseUrl" + manga.url, header)
+        return GET("$baseUrl" + manga.url, requestHTMLHeaders)
     }
 
     // 漫画章节信息
@@ -193,7 +204,7 @@ class Mumamanhua : ParsedHttpSource() {
 
     // 重写章节进入查看图片页的访问方式,以添加请求头
     override fun pageListRequest(chapter: SChapter): Request {
-        return GET("$baseUrl" + chapter.url, header)
+        return GET("$baseUrl" + chapter.url, requestHTMLHeaders)
     }
 
     // 漫画图片信息
@@ -206,7 +217,7 @@ class Mumamanhua : ParsedHttpSource() {
 
     // 重写图片的访问方式,以添加请求头
     override fun imageUrlRequest(page: Page): Request {
-        return GET(page.url, header)
+        return GET(page.url, requestImageHeaders)
     }
 
     override fun imageUrlParse(document: Document): String = throw Exception("Not Used")
