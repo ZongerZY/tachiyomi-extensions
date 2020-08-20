@@ -80,7 +80,7 @@ class Mumamanhua : ParsedHttpSource() {
         "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
         "Accept-Encoding" to "",
         "Accept-Language" to "zh-CN,zh;q=0.9",
-        "User-Agent" to "Mozilla/5.0 (Linux; U; Android 9; zh-cn; MI 9 SE Build/PKQ1.181121.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.141 Mobile Safari/537.36 XiaoMi/MiuiBrowser/11.8.12",
+        "User-Agent" to phone.get((1..40).random()),
         "Upgrade-Insecure-Requests" to "1",
         "Sec-Fetch-Dest" to "document",
         "Sec-Fetch-Mode" to "navigate",
@@ -93,12 +93,12 @@ class Mumamanhua : ParsedHttpSource() {
         "Accept" to "image/webp,image/apng,*/*;q=0.8",
         "Accept-Encoding" to "",
         "Accept-Language" to "zh-CN,zh;q=0.9",
-        "User-Agent" to "Mozilla/5.0 (Linux; U; Android 9; zh-cn; MI 9 SE Build/PKQ1.181121.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.141 Mobile Safari/537.36 XiaoMi/MiuiBrowser/11.8.12",
+        "User-Agent" to "(Linux; U; Android 8.0.0; zh-CN; VTR-AL00 Build/HUAWEIVTR-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.108 UCBrowser/11.8.0.960 Mobile Safari/537.36",
         "Sec-Fetch-Dest" to "image",
         "Sec-Fetch-Mode" to "no-cors",
         "Sec-Fetch-Site" to "same-site",
         "Connection" to "keep-alive",
-        "Host" to "pic.muamh.com"
+        "Host" to "cdn.zzdaye.com"
     ))
 
     // 点击量排序(人气)
@@ -166,8 +166,8 @@ class Mumamanhua : ParsedHttpSource() {
     private fun getMangaStatus(document: Document): Int {
         val statusText = document.select("span.hasread.ift-fire").text()
         return when {
-            statusText.indexOf("连载") > 0 -> 1
-            statusText.indexOf("完结") > 0 -> 2
+            statusText.indexOf("连载") >= 0 -> 1
+            statusText.indexOf("完结") >= 0 -> 2
             else -> 0
         }
     }
