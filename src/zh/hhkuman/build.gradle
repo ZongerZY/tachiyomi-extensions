@@ -2,10 +2,10 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 ext {
-    extName = 'Mm95'
-    pkgNameSuffix = 'zh.mm95'
-    extClass = '.Mm95'
-    extVersionCode = 2
+    extName = 'HHkuman'
+    pkgNameSuffix = 'zh.hhkuman'
+    extClass = '.HHkuman'
+    extVersionCode = 3
     libVersion = '1.2'
 }
 

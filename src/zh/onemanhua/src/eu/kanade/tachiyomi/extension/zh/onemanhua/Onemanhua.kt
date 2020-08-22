@@ -25,7 +25,7 @@ class Onemanhua : ParsedHttpSource() {
     override val name = "OH漫画 (One漫画)"
     override val baseUrl = "https://www.ohmanhua.com/"
 
-    private var decryptKey = "JRUIFMVJDIWE569j"
+    private var decryptKey = "fw12558899ertyui"
     private var imageServerUrl = "https://img.ohmanhua.com/comic/"
 
     // Common
