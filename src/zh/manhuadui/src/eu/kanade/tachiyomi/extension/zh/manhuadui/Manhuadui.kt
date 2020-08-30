@@ -27,8 +27,8 @@ class Manhuadui : ParsedHttpSource() {
     private val imageServer = arrayOf("https://mhcdn.manhuazj.com", "https://res.333dm.com", "https://res02.333dm.com")
 
     companion object {
-        private const val DECRYPTION_KEY = "1739ZAQ54321bbG1"
-        private const val DECRYPTION_IV = "ABCDEF1G344321bb"
+        private const val DECRYPTION_KEY = "KA58ZAQ321oobbG1"
+        private const val DECRYPTION_IV = "A1B2C3DEF1G321oo"
     }
 
     override fun popularMangaSelector() = "li.list-comic"
