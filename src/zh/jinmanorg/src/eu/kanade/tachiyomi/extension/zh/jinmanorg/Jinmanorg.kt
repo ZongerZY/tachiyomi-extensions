@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.zh.jinmantiantang
+package eu.kanade.tachiyomi.extension.zh.jinmanorg
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Filter
@@ -14,10 +14,10 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 
-class Jinmantiantang : ParsedHttpSource() {
-    override val baseUrl: String = "https://18comic2.biz"
+class Jinmanorg : ParsedHttpSource() {
+    override val baseUrl: String = "https://18comic.org"
     override val lang: String = "zh"
-    override val name: String = "禁漫天堂"
+    override val name: String = "禁漫:海外"
     override val supportsLatest: Boolean = true
 
     private var chapterArea = "a[class=col btn btn-primary dropdown-toggle reading]"
