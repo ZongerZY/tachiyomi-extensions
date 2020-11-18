@@ -17,7 +17,7 @@ import org.json.JSONObject
 
 class Aimanhua : HttpSource() {
 
-    override val name = "爱漫画:小明太极"
+    override val name = "爱漫画"
     override val baseUrl = ""
     override val lang = "zh"
     override val supportsLatest = true
@@ -40,6 +40,7 @@ class Aimanhua : HttpSource() {
     override fun imageUrlRequest(page: Page): Request {
         throw UnsupportedOperationException("This method should not be called!")
     }
+
     // 处理漫画列表信息
     private fun mangaFromJSON(json: String): MangasPage {
         val obj = JSONObject(json)
@@ -59,19 +60,23 @@ class Aimanhua : HttpSource() {
         }
         return MangasPage(ret, arr.length() != 0)
     }
+
     // 点击量
     override fun popularMangaRequest(page: Int): Request {
         return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&size=7&orderby=click&search_key=&young_mode=0&platformname=android&productname=kmh")
     }
+
     // 处理点击量请求
     override fun popularMangaParse(response: Response): MangasPage {
         val body = response.body()!!.string()
         return mangaFromJSON(body)
     }
+
     // 按更新
     override fun latestUpdatesRequest(page: Int): Request {
         return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&size=7&orderby=date&search_key=&young_mode=0&platformname=android&productname=kmh")
     }
+
     // 处理更新请求
     override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
 
@@ -85,8 +90,9 @@ class Aimanhua : HttpSource() {
         artist = obj.getString("comic_media")
         genre = getMangaGenre(obj.getString("comic_type_new"))
         status = obj.getString("comic_status").toInt()
-        description = obj.getString("comic_id")
+        description = obj.getString("comic_desc")
     }
+
     private fun getMangaGenre(json: String): String {
         val arr = JSONArray(json)
         var genre = ""
@@ -100,6 +106,7 @@ class Aimanhua : HttpSource() {
         }
         return genre
     }
+
     override fun chapterListParse(response: Response): List<SChapter> {
         val json = response.body()!!.string()
         val obj = JSONObject(json)
@@ -108,9 +115,6 @@ class Aimanhua : HttpSource() {
         val ret = java.util.ArrayList<SChapter>()
         for (i in 0 until arr.length()) {
             val chapter = arr.getJSONObject(i)
-            val chapter_image = chapter.getJSONObject("chapter_image").getString("high")
-            val start_num = chapter.getString("start_num")
-            val end_num = chapter.getString("end_num")
             ret.add(SChapter.create().apply {
                 name = chapter.getString("chapter_name")
                 date_upload = chapter.getString("create_date").toLong() * 1000 // milliseconds
@@ -129,12 +133,13 @@ class Aimanhua : HttpSource() {
         var start_num = pageJson.getString("start_num").toInt()
         var end_num = pageJson.getString("end_num").toInt()
         var arrList = ArrayList<Page>(pageJson.length())
+        var chapter_domain = pageJson.getString("chapter_domain")
         var pageBaseurl = pageJson.getJSONObject("chapter_image").getString("high")
         var pageBaseurl1 = pageBaseurl.split("$$")[0]
         var pageBaseurl2 = pageBaseurl.split("$$")[1]
 
         for (i in start_num until end_num + 1) {
-            arrList.add(Page(i, "", "http://mhpic.yqmh.com$pageBaseurl1$i$pageBaseurl2"))
+            arrList.add(Page(i, "", "http://mhpic.$chapter_domain$pageBaseurl1$i$pageBaseurl2"))
         }
         return arrList
     }
@@ -209,6 +214,7 @@ class Aimanhua : HttpSource() {
         Pair("动作", "https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?search_type=&search_key=&platformname=android&productname=kmh&comic_sort=dongzuo")
 
     ))
+
     // 状态分类
     private class UpdateFilter : UriPartFilter("状态分类", arrayOf(
         Pair("点击量", "&orderby=click"),

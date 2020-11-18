@@ -1,0 +1,12 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+ext {
+    extName = 'Zhiyinmanke'
+    pkgNameSuffix = 'zh.zhiyinmanke'
+    extClass = '.Zhiyinmanke'
+    extVersionCode = 1
+    libVersion = '1.2'
+}
+
+apply from: "$rootDir/common.gradle"
