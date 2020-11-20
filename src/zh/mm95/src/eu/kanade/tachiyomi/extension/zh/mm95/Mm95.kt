@@ -315,11 +315,11 @@ class Mm95 : HttpSource() {
         } else {
             var htmlText = response.body()!!.string().trim()
             var body = Pattern.compile("\\s*|\t|\r|\n").matcher(htmlText).replaceAll("")
-            val chapterImagesRegex = Regex("""dynamicEl\:(.*?)\,\]\}\)\}\)\;""")
+            val chapterImagesRegex = Regex("""dynamicEl\:\[(.*?)\,\]\}\)\}\)\;""")
 
             var pageJsonStr = chapterImagesRegex.find(body)?.groups?.get(1)?.value
-                ?: throw Exception("pageCodeStr not found")
-            pageJsonStr = pageJsonStr.replace("\'", "\"") + "]"
+                ?: throw Exception("正则表达式解析失败")
+            pageJsonStr = "[" + pageJsonStr.replace("\'", "\"") + "]"
 
             var pageJson = JSONArray(pageJsonStr)
             var arrList = ArrayList<Page>(pageJson.length())

@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.zh.aimanhua
+package eu.kanade.tachiyomi.extension.zh.manhuatai
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Filter
@@ -15,16 +15,17 @@ import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
 
-class Aimanhua : HttpSource() {
+class Manhuatai : HttpSource() {
     // 和 爱漫画 漫画台 用得同一个连接请求
-    override val name = "爱漫画"
+    override val name = "漫画台"
     override val baseUrl = ""
     override val lang = "zh"
     override val supportsLatest = true
 
     private var requestJsonHeaders = Headers.of(mapOf(
-        "Cache-Control" to "application/json",
-        "User-Agent" to "okhttp/3.12.1",
+        "Cache-Control" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36",
+        "Host" to "getconfig-globalapi.yyhao.com",
         "Connection" to "close"
     ))
     private var requestImageHeaders = Headers.of(mapOf(
@@ -57,7 +58,7 @@ class Aimanhua : HttpSource() {
                 title = comic_name
                 thumbnail_url = "http://image.yqmh.com/mh/$comic_id.jpg-600x800.jpg.webp"
                 author = comic_author
-                url = "http://comic.321mh.com/app_api/v5/getcomicinfo_body/?comic_id=$comic_id&young_mode=0&from_page=search&platformname=android&productname=kmh"
+                url = "http://comic.321mh.com/app_api/v5/getcomicinfo_body/?comic_id=$comic_id&from_page=search&platformname=android&productname=kmh"
             })
         }
         return MangasPage(ret, arr.length() != 0)
@@ -65,7 +66,7 @@ class Aimanhua : HttpSource() {
 
     // 点击量
     override fun popularMangaRequest(page: Int): Request {
-        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&size=7&orderby=click&search_key=&young_mode=0&platformname=android&productname=kmh")
+        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&orderby=click&search_key=&platformname=android&productname=kmh")
     }
 
     // 处理点击量请求
@@ -76,7 +77,7 @@ class Aimanhua : HttpSource() {
 
     // 按更新
     override fun latestUpdatesRequest(page: Int): Request {
-        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&size=7&orderby=date&search_key=&young_mode=0&platformname=android&productname=kmh")
+        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&orderby=date&search_key=&platformname=android&productname=kmh")
     }
 
     // 处理更新请求
@@ -169,7 +170,7 @@ class Aimanhua : HttpSource() {
                     it.toUriPart()
                 } else ""
             }.filter { it != "" }.joinToString("")
-            return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?search_type=&search_key=&platformname=android&productname=kmh&comic_sort=$params&page=$page")
+            return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?search_type=&search_key=&platformname=android&productname=mht&comic_sort=$params&page=$page")
         }
     }
 
@@ -197,7 +198,7 @@ class Aimanhua : HttpSource() {
         Pair("悬疑", "xuanyi"),
         Pair("社会", "shehui"),
         Pair("恋爱", "lianai"),
-        Pair("宠物", "=chongwu"),
+        Pair("宠物", "chongwu"),
         Pair("吸血", "xixue"),
         Pair("霸总", "bazong"),
         Pair("玄幻", "xuanhuan"),
@@ -215,7 +216,6 @@ class Aimanhua : HttpSource() {
         Pair("修真", "xiuzhen"),
         Pair("生活", "shenghuo"),
         Pair("动作", "dongzuo")
-
     ))
 
     // 状态分类

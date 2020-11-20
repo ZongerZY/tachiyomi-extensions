@@ -46,6 +46,8 @@ class Zhiyinmanke : HttpSource() {
         val obj = JSONObject(json)
         val arr = obj.getJSONObject("data").getJSONObject("page").getJSONArray("comic_list")
         val ret = java.util.ArrayList<SManga>(arr.length())
+        if (arr.length() == 0)
+            return MangasPage(ret, false)
         for (i in 0 until arr.length()) {
             val objArr = arr.getJSONObject(i)
             val comic_id = objArr.getString("comic_id")
