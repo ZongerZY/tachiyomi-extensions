@@ -13,6 +13,11 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.ParsedHttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.text.SimpleDateFormat
+import java.util.Locale
+import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
@@ -22,26 +27,27 @@ import okhttp3.ResponseBody
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @Nsfw
 class Jinmantiantang : ParsedHttpSource() {
 
-    override val baseUrl: String = "https://18comic2.biz"
+    override val baseUrl: String = "https://18comic4.biz"
     override val lang: String = "zh"
     override val name: String = "禁漫天堂"
     override val supportsLatest: Boolean = true
+
+    // 对只有一章的漫画进行判断条件
+    private var chapterArea = "a[class=col btn btn-primary dropdown-toggle reading]"
+
+    private var myHeaders = Headers.of(mapOf(
+        "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36"
+    ))
+    private fun myGET(url: String) = GET(url, myHeaders)
 
     // 220980
     // 算法 html页面 1800 行左右
     // 图片开始分割的ID编号
     val scramble_id = 220980
-
-    // 对只有一章的漫画进行判断条件
-    private var chapterArea = "a[class=col btn btn-primary dropdown-toggle reading]"
 
     // 处理URL请求
     override val client: OkHttpClient = network.cloudflareClient.newBuilder().addInterceptor(
@@ -100,7 +106,7 @@ class Jinmantiantang : ParsedHttpSource() {
 
     // 点击量排序(人气)
     override fun popularMangaRequest(page: Int): Request {
-        return GET("$baseUrl/albums?o=mv&page=$page&screen=$defaultRemovedGenres", headers)
+        return myGET("$baseUrl/albums?o=mv&page=$page&screen=$defaultRemovedGenres")
     }
 
     override fun popularMangaNextPageSelector(): String? = "a.prevnext"
@@ -114,7 +120,7 @@ class Jinmantiantang : ParsedHttpSource() {
 
     // 最新排序
     override fun latestUpdatesRequest(page: Int): Request {
-        return GET("$baseUrl/albums?o=mr&page=$page&screen=$defaultRemovedGenres", headers)
+        return myGET("$baseUrl/albums?o=mr&page=$page&screen=$defaultRemovedGenres")
     }
 
     override fun latestUpdatesNextPageSelector(): String? = popularMangaNextPageSelector()
@@ -150,7 +156,7 @@ class Jinmantiantang : ParsedHttpSource() {
                 HttpUrl.parse("$baseUrl$params&page=$page&screen=$defaultRemovedGenres$removedGenres")?.newBuilder()
             }
         }
-        return GET(url.toString(), headers)
+        return myGET(url.toString())
     }
 
     // 默认过滤类型, 仅针对能够自己编译应用的读者
@@ -262,7 +268,7 @@ class Jinmantiantang : ParsedHttpSource() {
                 }
             }
             return document.select("a.prevnext").firstOrNull()
-                ?.let { internalParse(client.newCall(GET(it.attr("abs:href"), headers)).execute().asJsoup(), pages) } ?: pages
+                ?.let { internalParse(client.newCall(myGET(it.attr("abs:href"))).execute().asJsoup(), pages) } ?: pages
         }
 
         return internalParse(document, mutableListOf())
