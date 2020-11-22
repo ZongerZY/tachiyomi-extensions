@@ -53,7 +53,7 @@ class Manhuazhan : HttpSource() {
         for (mangaElement in mangasElements) {
             mangas.add(SManga.create().apply {
                 title = mangaElement.select("p.comic__title a").text()
-                thumbnail_url = mangaElement.select("a.cover img.lazy").attr("data-src")
+                thumbnail_url = mangaElement.select("a.cover img.lazy").attr("data-src").split("!")[0] + "!page-1200-x"
                 url = mangaElement.select("a.cover").attr("href")
             })
         }
@@ -65,7 +65,7 @@ class Manhuazhan : HttpSource() {
         var document = Jsoup.parseBodyFragment(body)
 
         title = document.select("p.comic-title.j-comic-title").text()
-        thumbnail_url = document.select("div.de-info__cover img.lazy").attr("data-src")
+        thumbnail_url = document.select("div.de-info__cover img.lazy").attr("data-src").split("!")[0] + "!page-1200-x"
         author = document.select("div.comic-author span.name a").text()
         status = if (document.select("div.de-chapter__title span").get(0).text().equals("完结")) 2 else 1
         description = document.select("p.intro-total").text()
@@ -89,7 +89,7 @@ class Manhuazhan : HttpSource() {
         var elements = Jsoup.parseBodyFragment(body).select("div.rd-article-wr").select("div.rd-article__pic img.lazy-read")
         var arrList = ArrayList<Page>(elements.size)
         for (i in 0 until elements.size) {
-            arrList.add(Page(i, "", elements.get(i).attr("data-src")))
+            arrList.add(Page(i, "", elements.get(i).attr("data-src").split("!")[0] + "!page-1200-x"))
         }
         return arrList
     }
