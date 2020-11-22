@@ -19,6 +19,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class Samanhua : HttpSource() {
+    // 爱飒漫画网页版不爬取原因
+    // https://www.isamanhua.com/api/getComicList/?product_id=1&productname=asmh&platformname=pc
+    // 一次性加载出全部漫画 两千多个
 
     override val name = "飒漫画"
     override val baseUrl = ""
@@ -38,11 +41,6 @@ class Samanhua : HttpSource() {
     private fun jsonPost(url: String, body: RequestBody) = POST(url, requestJsonHeaders, body)
     private fun jsonGet(url: String) = GET(url, requestJsonHeaders)
     private fun imageGet(url: String) = GET(url, requestImageHeaders)
-
-    // 重写图片的访问方式,以添加请求头
-    override fun imageUrlRequest(page: Page): Request {
-        throw UnsupportedOperationException("This method should not be called!")
-    }
 
     // 处理漫画列表信息
     private fun mangaFromJSON(json: String): MangasPage {
