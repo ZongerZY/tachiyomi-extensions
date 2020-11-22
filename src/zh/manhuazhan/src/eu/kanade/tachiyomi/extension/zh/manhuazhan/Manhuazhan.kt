@@ -13,7 +13,7 @@ import okhttp3.Response
 import org.jsoup.Jsoup
 
 class Manhuazhan : HttpSource() {
-    // 漫画栈 枫漫画 用HTML网页爬取
+    // 漫画栈 用HTML网页爬取
 
     override val name = "漫画栈"
     override val baseUrl = "https://www.mkzhan.com"

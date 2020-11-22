@@ -1,6 +1,7 @@
-package eu.kanade.tachiyomi.extension.zh.aimanhua
+package eu.kanade.tachiyomi.extension.zh.shenmanhua
 
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -11,28 +12,30 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import kotlin.collections.ArrayList
 import okhttp3.Headers
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
 
-class Aimanhua : HttpSource() {
-    // 和 爱漫画 漫画台 用得同一个连接请求
-    override val name = "爱漫画"
+class Shenmanhua : HttpSource() {
+
+    override val name = "神漫画"
     override val baseUrl = ""
     override val lang = "zh"
     override val supportsLatest = true
 
     private var requestJsonHeaders = Headers.of(mapOf(
         "Cache-Control" to "application/json",
-        "User-Agent" to "okhttp/3.12.1",
-        "Connection" to "close"
+        "channel" to "oppo"
     ))
     private var requestImageHeaders = Headers.of(mapOf(
         "Accept-Encoding" to "gzip",
         "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36",
-        "Referer" to "http://www.manhuatai.com/"
+        "Referer" to "http://www.manhuatai.com/",
+        "Host" to "mhpic.cnmanhua.com"
     ))
 
+    private fun jsonPost(url: String, body: RequestBody) = POST(url, requestJsonHeaders, body)
     private fun jsonGet(url: String) = GET(url, requestJsonHeaders)
     private fun imageGet(url: String) = GET(url, requestImageHeaders)
 
@@ -43,8 +46,7 @@ class Aimanhua : HttpSource() {
 
     // 处理漫画列表信息
     private fun mangaFromJSON(json: String): MangasPage {
-        val obj = JSONObject(json)
-        val arr = obj.getJSONArray("data")
+        var arr = JSONObject(json).getJSONArray("data")
         val ret = java.util.ArrayList<SManga>(arr.length())
         if (arr.length() == 0)
             return MangasPage(ret, false)
@@ -52,12 +54,10 @@ class Aimanhua : HttpSource() {
             val objArr = arr.getJSONObject(i)
             val comic_id = objArr.getString("comic_id")
             val comic_name = objArr.getString("comic_name")
-            val comic_author = objArr.getString("comic_author")
             ret.add(SManga.create().apply {
                 title = comic_name
                 thumbnail_url = "http://image.yqmh.com/mh/$comic_id.jpg-600x800.jpg.webp"
-                author = comic_author
-                url = "http://comic.321mh.com/app_api/v5/getcomicinfo_body/?comic_id=$comic_id&young_mode=0&from_page=search&platformname=android&productname=kmh"
+                url = "http://comic.321mh.com/app_api/v5/getcomicinfo_body/?comic_id=$comic_id&from_page=search&platformname=android&productname=smh"
             })
         }
         return MangasPage(ret, arr.length() != 0)
@@ -65,7 +65,7 @@ class Aimanhua : HttpSource() {
 
     // 点击量
     override fun popularMangaRequest(page: Int): Request {
-        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&size=7&orderby=click&search_key=&young_mode=0&platformname=android&productname=kmh")
+        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&search_type=&comic_sort=&orderby=click&search_key=&platformname=android&productname=smh")
     }
 
     // 处理点击量请求
@@ -76,11 +76,15 @@ class Aimanhua : HttpSource() {
 
     // 按更新
     override fun latestUpdatesRequest(page: Int): Request {
-        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&size=7&orderby=date&search_key=&young_mode=0&platformname=android&productname=kmh")
+        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&search_type=&comic_sort=&orderby=date&search_key=&platformname=android&productname=smh")
     }
 
     // 处理更新请求
     override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
+
+    override fun mangaDetailsRequest(manga: SManga): Request {
+        return jsonGet(manga.url)
+    }
 
     override fun mangaDetailsParse(response: Response): SManga = SManga.create().apply {
         val body = response.body()!!.string()
@@ -109,21 +113,28 @@ class Aimanhua : HttpSource() {
         return genre
     }
 
+    override fun chapterListRequest(manga: SManga): Request {
+        return jsonGet(manga.url)
+    }
+
     override fun chapterListParse(response: Response): List<SChapter> {
+        var requestUrl = response.request().url().toString()
         val json = response.body()!!.string()
-        val obj = JSONObject(json)
-        var arr = obj.getJSONArray("comic_chapter")
-        var comic_id = obj.getString("comic_id")
+        var arr = JSONObject(json).getJSONArray("comic_chapter")
         val ret = java.util.ArrayList<SChapter>()
         for (i in 0 until arr.length()) {
             val chapter = arr.getJSONObject(i)
             ret.add(SChapter.create().apply {
                 name = chapter.getString("chapter_name")
                 date_upload = chapter.getString("create_date").toLong() * 1000 // milliseconds
-                url = "http://comic.321mh.com/app_api/v5/getcomicinfo_body/?comic_id=$comic_id&young_mode=0&from_page=search&platformname=android&productname=kmh&pages=$i"
+                url = requestUrl + "&pages=" + i
             })
         }
         return ret
+    }
+
+    override fun pageListRequest(chapter: SChapter): Request {
+        return jsonGet(chapter.url)
     }
 
     override fun pageListParse(response: Response): List<Page> {
@@ -155,21 +166,21 @@ class Aimanhua : HttpSource() {
     }
 
     override fun searchMangaParse(response: Response): MangasPage {
-        val body = response.body()!!.string()
-        return mangaFromJSON(body)
+        val json = response.body()!!.string()
+        return mangaFromJSON(json)
     }
 
     // 查询及分类查询
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         if (query != "") {
-            return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&size=7&orderby=click&search_key=$query&young_mode=0&platformname=android&productname=kmh")
+            return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=1&orderby=click&search_type=&comic_sort=&search_key=$query&size=21&young_mode=0&platformname=android&productname=smh")
         } else {
             val params = filters.map {
                 if (it is UriPartFilter) {
                     it.toUriPart()
                 } else ""
             }.filter { it != "" }.joinToString("")
-            return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?search_type=&search_key=&platformname=android&productname=kmh&comic_sort=$params&page=$page")
+            return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&search_type=&comic_sort=$params&search_key=&platformname=android&productname=smh")
         }
     }
 
@@ -182,39 +193,51 @@ class Aimanhua : HttpSource() {
     // 漫画分类
     private class ClassifyFilter : UriPartFilter("查询分类", arrayOf(
         Pair("全部", ""),
-        Pair("完结", "wanjie"),
-        Pair("连载", "lianzai"),
-        Pair("精品", "jingpin"),
         Pair("热血", "rexue"),
+        Pair("武侠", "wuxia"),
+        Pair("玄幻", "xuanhuan"),
+        Pair("穿越", "chuanyue"),
+        Pair("修真", "xiuzhen"),
+        Pair("神魔", "shenmo"),
+        Pair("冒险", "maoxian"),
+        Pair("游戏", "youxi"),
+        Pair("社会", "shehui"),
         Pair("机战", "jizhan"),
         Pair("运动", "yundong"),
         Pair("推理", "tuili"),
-        Pair("冒险", "maoxian"),
         Pair("搞笑", "gaoxiao"),
         Pair("战争", "zhanzhen"),
-        Pair("神魔", "shenmo"),
+        Pair("忍者", "renzhe"),
         Pair("竞技", "jingji"),
         Pair("悬疑", "xuanyi"),
-        Pair("社会", "shehui"),
         Pair("恋爱", "lianai"),
-        Pair("宠物", "chongwu"),
-        Pair("吸血", "xixue"),
-        Pair("霸总", "bazong"),
-        Pair("玄幻", "xuanhuan"),
-        Pair("古风", "gufeng"),
-        Pair("历史", "lishi"),
-        Pair("漫改", "mangai"),
-        Pair("游戏", "youxi"),
-        Pair("穿越", "chuanyue"),
-        Pair("恐怖", "kongbu"),
+        Pair("小说改编", "xiaoshuo"),
+        Pair("完结", "wanjie"),
+        Pair("全彩", "quancai"),
+        Pair("黑白", "heibai"),
+        Pair("精品", "jingpin"),
+        Pair("杂志", "zazhi"),
+        Pair("港台", "gangtai"),
+        Pair("欧美", "oumei"),
+        Pair("生活", "shenghuo"),
+        Pair("动作", "dongzuo"),
+        Pair("大陆", "dalu"),
+        Pair("日本", "riben"),
         Pair("真人", "zhenren"),
         Pair("科幻", "kehuan"),
         Pair("防疫", "fangyi"),
         Pair("都市", "dushi"),
-        Pair("武侠", "wuxia"),
-        Pair("修真", "xiuzhen"),
-        Pair("生活", "shenghuo"),
-        Pair("动作", "dongzuo")
+        Pair("霸总", "bazong"),
+        Pair("古风", "gufeng"),
+        Pair("历史", "lishi"),
+        Pair("恐怖", "kongbu"),
+        Pair("宠物", "chongwu"),
+        Pair("吸血", "xixue"),
+        Pair("萝莉", "luoli"),
+        Pair("御姐", "yujie"),
+        Pair("韩国", "os"),
+        Pair("连载", "lianzai"),
+        Pair("漫改", "mangai")
 
     ))
 

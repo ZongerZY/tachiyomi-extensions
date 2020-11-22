@@ -32,8 +32,7 @@ class Samanhua : HttpSource() {
     private var requestImageHeaders = Headers.of(mapOf(
         "Accept-Encoding" to "gzip",
         "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36",
-        "Referer" to "http://www.manhuatai.com/wdsomg/1.html?from=kmhapp",
-        "Host" to "mhpic.cnmanhua.com"
+        "Referer" to "http://www.manhuatai.com/"
     ))
 
     private fun jsonPost(url: String, body: RequestBody) = POST(url, requestJsonHeaders, body)
