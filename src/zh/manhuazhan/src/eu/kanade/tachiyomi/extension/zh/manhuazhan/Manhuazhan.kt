@@ -14,6 +14,9 @@ import org.jsoup.Jsoup
 
 class Manhuazhan : HttpSource() {
     // 漫画栈 用HTML网页爬取
+    //图片压缩格式 高清!page-1200-x 标清!page-100-x 流畅!page-800-x !
+    //banner-600-x  banner-800-x
+    //cover-800-x cover-600-x cover-600-x
 
     override val name = "漫画栈"
     override val baseUrl = "https://www.mkzhan.com"
