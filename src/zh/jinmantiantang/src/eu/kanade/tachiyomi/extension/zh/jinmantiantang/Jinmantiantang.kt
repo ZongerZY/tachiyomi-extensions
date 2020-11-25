@@ -40,8 +40,10 @@ class Jinmantiantang : ParsedHttpSource() {
     private var chapterArea = "a[class=col btn btn-primary dropdown-toggle reading]"
 
     private var myHeaders = Headers.of(mapOf(
-        "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36"
+        "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36",
+        "Cookie" to "shunt=5"
     ))
+
     private fun myGET(url: String) = GET(url, myHeaders)
 
     // 220980
@@ -166,6 +168,11 @@ class Jinmantiantang : ParsedHttpSource() {
     override fun searchMangaSelector(): String = popularMangaSelector()
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
+    // 查询漫画详情请求
+    override fun mangaDetailsRequest(manga: SManga): Request {
+        return myGET(manga.url)
+    }
+
     // 漫画详情
     // url网址 , title标题 , artist艺术家 , author作者 , description描述 , genre类型 , thumbnail_url缩图网址 , initialized是否初始化
     // status状态 0未知,1连载,2完结,3领取牌照
@@ -250,8 +257,18 @@ class Jinmantiantang : ParsedHttpSource() {
         }
     }
 
+    // 查询章节信息请求
+    override fun chapterListRequest(manga: SManga): Request {
+        return myGET(manga.url)
+    }
+
     override fun chapterListParse(response: Response): List<SChapter> {
         return super.chapterListParse(response).asReversed()
+    }
+
+    // 查询漫画界面请求
+    override fun pageListRequest(chapter: SChapter): Request {
+        return myGET(chapter.url)
     }
 
     // 漫画图片信息
