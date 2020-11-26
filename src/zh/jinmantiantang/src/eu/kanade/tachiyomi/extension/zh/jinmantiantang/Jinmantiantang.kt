@@ -170,7 +170,7 @@ class Jinmantiantang : ParsedHttpSource() {
 
     // 查询漫画详情请求
     override fun mangaDetailsRequest(manga: SManga): Request {
-        return myGET(manga.url)
+        return myGET("$baseUrl${manga.url}")
     }
 
     // 漫画详情
@@ -259,7 +259,7 @@ class Jinmantiantang : ParsedHttpSource() {
 
     // 查询章节信息请求
     override fun chapterListRequest(manga: SManga): Request {
-        return myGET(manga.url)
+        return myGET("$baseUrl${manga.url}")
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
@@ -268,7 +268,7 @@ class Jinmantiantang : ParsedHttpSource() {
 
     // 查询漫画界面请求
     override fun pageListRequest(chapter: SChapter): Request {
-        return myGET(chapter.url)
+        return myGET("$baseUrl${chapter.url}")
     }
 
     // 漫画图片信息

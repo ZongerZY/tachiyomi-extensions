@@ -37,7 +37,7 @@ class Qinqinmanhua : HttpSource() {
         "Accept-Language" to "zh-CN,en-US;q=0.8",
         "X-Requested-With" to "com.android.browser",
         "Upgrade-Insecure-Requests" to "1",
-        "Connection" to "Keep-Alive",
+        "Connection" to "close",
         "Host" to "m.acgcd.com"
     ))
 
