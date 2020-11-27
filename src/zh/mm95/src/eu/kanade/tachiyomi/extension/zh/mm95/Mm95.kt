@@ -513,6 +513,8 @@ class Mm95 : HttpSource() {
         Pair("明星写真", "/category-4/list-1/index.html?append=list-home&pos=cate"),
         Pair("摄影私房", "/category-2/list-1/index.html?append=list-home&pos=cate"),
         Pair("清纯唯美", "/category-1/list-1/index.html?append=list-home&pos=cate"),
+        Pair("游戏主题", "/category-9/list-1/index.html?append=list-home&pos=cate"),
+        Pair("美女壁纸", "/category-11/list-1/index.html?append=list-home&pos=cate"),
         Pair("VIP相册", "/tag-vip/page-1/index.html?append=list-home&pos=tag"),
         Pair("小九月", "/tag-小九月/page-1/index.html?append=list-home&pos=tag"),
         Pair("薄纱", "/tag-薄纱/page-1/index.html?append=list-home&pos=tag"),

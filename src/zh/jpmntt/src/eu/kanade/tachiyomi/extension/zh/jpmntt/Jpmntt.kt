@@ -159,6 +159,7 @@ class Jpmntt : HttpSource() {
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         if (query != "") {
+            throw UnsupportedOperationException("http://${JSONObject(baseUrlJson).getJSONArray("baseUrlJson").getJSONObject(queryBaseUrl_ID).getString("url")}/s.asp?page=$queryBaseUrl_Page&act=topic&classid=&keyword=" + URLEncoder.encode(query, "GB2312"))
             return myGet("http://${JSONObject(baseUrlJson).getJSONArray("baseUrlJson").getJSONObject(queryBaseUrl_ID).getString("url")}/s.asp?page=$queryBaseUrl_Page&act=topic&classid=&keyword=" + URLEncoder.encode(query, "GB2312"))
         } else {
             val params = filters.map {
@@ -166,6 +167,7 @@ class Jpmntt : HttpSource() {
                     it.toUriPart()
                 } else ""
             }.filter { it != "" }.joinToString("")
+            throw UnsupportedOperationException("http://${JSONObject(classUrlJson).getJSONArray("classUrlJson").getJSONObject(filteUrl_ID).getString("url")}$params$filteUrl_Page.html")
             return myGet("http://${JSONObject(classUrlJson).getJSONArray("classUrlJson").getJSONObject(filteUrl_ID).getString("url")}$params$filteUrl_Page.html")
         }
     }
@@ -175,7 +177,13 @@ class Jpmntt : HttpSource() {
         if (requestUrl.contains("s.asp")) {
             val body = response.body()!!.string()
             var document = Jsoup.parseBodyFragment(body)
-            queryBaseUrl_ALLPage = document.select("""div.pagelist form p a[title="尾页"]""").attr("href").split("page=")[1].split("&")[0].toInt()
+            if(queryBaseUrl_Page == 1){
+                if(document.select("""div.pagelist form p a[title="尾页"]""").size == 0)
+                    queryBaseUrl_ALLPage = 1
+                else
+                    queryBaseUrl_ALLPage = document.select("""div.pagelist form p a[title="尾页"]""").attr("href").split("page=")[1].split("&")[0].toInt()
+
+            }
             if (queryBaseUrl_Page == queryBaseUrl_ALLPage) {
                 queryBaseUrl_ID++
                 queryBaseUrl_Page = 1
@@ -186,7 +194,7 @@ class Jpmntt : HttpSource() {
             if (mangasElements.size == 0) {
                 queryBaseUrl_ID++
                 queryBaseUrl_Page = 1
-                return MangasPage(mangas, false)
+                return MangasPage(mangas, true)
             }
             for (mangaElement in mangasElements) {
                 mangas.add(SManga.create().apply {
@@ -195,11 +203,16 @@ class Jpmntt : HttpSource() {
                     url = requestUrl + mangaElement.select("a").attr("title")
                 })
             }
-            return MangasPage(mangas, false)
+            return MangasPage(mangas, true)
         } else {
             val body = response.body()!!.string()
             var document = Jsoup.parseBodyFragment(body)
-            filteUrl_ALLPage = document.select("""div.pagelist form p a[title="尾页"]""").attr("href").split(".html")[0].toInt()
+            if(queryBaseUrl_Page == 1){
+                if(document.select("""div.pagelist form p a[title="尾页"]""").size == 0)
+                    queryBaseUrl_ALLPage = 1
+                else
+                    filteUrl_ALLPage = document.select("""div.pagelist form p a[title="尾页"]""").attr("href").split(".html")[0].split("_")[1].toInt()
+            }
             if (filteUrl_Page == filteUrl_ALLPage) {
                 filteUrl_ID++
                 filteUrl_Page = 1
