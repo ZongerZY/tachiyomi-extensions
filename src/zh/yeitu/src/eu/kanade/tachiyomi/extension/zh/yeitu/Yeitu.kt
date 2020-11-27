@@ -74,26 +74,47 @@ class Yeitu : HttpSource() {
     override fun pageListParse(response: Response): List<Page> {
         val body = response.body()!!.string()
         var document = Jsoup.parseBodyFragment(body)
-        var pageNum = document.select("#pages").select("a").get(document.select("#pages a").size - 2).text().toInt()
-        var arrList = ArrayList<Page>()
-        arrList.add(Page(0, response.request().url().toString()))
-        for (i in 2 until pageNum + 1) {
-            arrList.add(Page(i - 1, response.request().url().toString().split(".html")[0] + "_$i" + ".html"))
+        if (document.select("#pages").select("a").size == 0) {
+            if (document.select("div.picture div.img_box").size != 0) {
+                var arrList = ArrayList<Page>()
+                var imageElements = document.select("div.picture div.img_box img")
+                for (i in 0 until imageElements.size)
+                    arrList.add(Page(i, "", imageElements.get(i).attr("src")))
+                return arrList
+            } else {
+                var arrList = ArrayList<Page>()
+                var imageElements = document.select("div.picture div.picbox img")
+                for (i in 0 until imageElements.size)
+                    arrList.add(Page(i, "", imageElements.get(i).attr("src")))
+                return arrList
+            }
+        } else {
+            var pageNum = document.select("#pages").select("a").get(document.select("#pages a").size - 2).text().toInt()
+            var arrList = ArrayList<Page>()
+            arrList.add(Page(0, response.request().url().toString()))
+            for (i in 2 until pageNum + 1) {
+                arrList.add(Page(i - 1, response.request().url().toString().split(".html")[0] + "_$i" + ".html"))
+            }
+            return arrList
         }
-        return arrList
     }
 
     override fun imageUrlRequest(page: Page): Request {
+        if (page.url.equals("")) {
+            return myGet(page.imageUrl!!)
+        }
         return myGet(page.url)
     }
 
     override fun imageUrlParse(response: Response): String {
+        if (response.request().url().toString().contains(".jpg"))
+            return response.request().url().toString()
         val body = response.body()!!.string()
         var document = Jsoup.parseBodyFragment(body)
-        if (document.select("dic.picture div.img_box").size != 0)
-            return document.select("div.picture div.img_box a img").attr("src")
+        if (document.select("div.picture div.img_box").size != 0)
+            return document.select("div.picture div.img_box img").attr("src")
         else
-            return document.select("div.picture a img").attr("src")
+            return document.select("div.picture img").attr("src")
     }
 
     override fun imageRequest(page: Page): Request {
