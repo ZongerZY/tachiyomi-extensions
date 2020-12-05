@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import kotlin.collections.ArrayList
 import okhttp3.Request
 import okhttp3.Response
 import org.jsoup.Jsoup
@@ -15,10 +16,15 @@ import org.jsoup.nodes.Document
 
 class Yeitu : HttpSource() {
 
-    override val name = "亿图全景图库"
+    override val name = "亿图"
+    // 亿图全景图库
     override val baseUrl = ""
     override val lang = "zh"
     override val supportsLatest = true
+
+    private val weChartAndAliPay_Image = "https://live.staticflickr.com/65535/50671165767_b5340dee0e_h.jpg"
+    private val weChart_Image = "https://live.staticflickr.com/65535/50671165702_e1ef963809_b.jpg"
+    private val aliPay_Image = "https://live.staticflickr.com/65535/50671242527_fa2d7cfba9_b.jpg"
 
     private fun myGet(url: String) = GET(url, headers)
 
@@ -80,12 +86,16 @@ class Yeitu : HttpSource() {
                 var imageElements = document.select("div.picture div.img_box img")
                 for (i in 0 until imageElements.size)
                     arrList.add(Page(i, "", imageElements.get(i).attr("src")))
+                arrList.add(Page(0, "", weChart_Image))
+                arrList.add(Page(0, "", aliPay_Image))
                 return arrList
             } else {
                 var arrList = ArrayList<Page>()
                 var imageElements = document.select("div.picture div.picbox img")
                 for (i in 0 until imageElements.size)
                     arrList.add(Page(i, "", imageElements.get(i).attr("src")))
+                arrList.add(Page(0, "", weChart_Image))
+                arrList.add(Page(0, "", aliPay_Image))
                 return arrList
             }
         } else {
@@ -95,6 +105,8 @@ class Yeitu : HttpSource() {
             for (i in 2 until pageNum + 1) {
                 arrList.add(Page(i - 1, response.request().url().toString().split(".html")[0] + "_$i" + ".html"))
             }
+            arrList.add(Page(0, "", weChart_Image))
+            arrList.add(Page(0, "", aliPay_Image))
             return arrList
         }
     }

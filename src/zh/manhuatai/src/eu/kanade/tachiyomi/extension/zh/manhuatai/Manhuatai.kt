@@ -58,7 +58,7 @@ class Manhuatai : HttpSource() {
                 title = comic_name
                 thumbnail_url = "http://image.yqmh.com/mh/$comic_id.jpg-600x800.jpg.webp"
                 author = comic_author
-                url = "http://comic.321mh.com/app_api/v5/getcomicinfo_body/?comic_id=$comic_id&from_page=search&platformname=android&productname=kmh"
+                url = "http://comic.321mh.com/app_api/v5/getcomicinfo_body/?comic_id=$comic_id&from_page=search&platformname=android&productname=mht"
             })
         }
         return MangasPage(ret, arr.length() != 0)
@@ -66,7 +66,7 @@ class Manhuatai : HttpSource() {
 
     // 点击量
     override fun popularMangaRequest(page: Int): Request {
-        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&orderby=click&search_key=&platformname=android&productname=kmh")
+        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&orderby=click&search_key=&platformname=android&productname=mht")
     }
 
     // 处理点击量请求
@@ -77,7 +77,7 @@ class Manhuatai : HttpSource() {
 
     // 按更新
     override fun latestUpdatesRequest(page: Int): Request {
-        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&orderby=date&search_key=&platformname=android&productname=kmh")
+        return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&orderby=date&search_key=&platformname=android&productname=mht")
     }
 
     // 处理更新请求
@@ -121,7 +121,7 @@ class Manhuatai : HttpSource() {
             ret.add(SChapter.create().apply {
                 name = chapter.getString("chapter_name")
                 date_upload = chapter.getString("create_date").toLong() * 1000 // milliseconds
-                url = "http://comic.321mh.com/app_api/v5/getcomicinfo_body/?comic_id=$comic_id&young_mode=0&from_page=search&platformname=android&productname=kmh&pages=$i"
+                url = "http://comic.321mh.com/app_api/v5/getcomicinfo_body/?comic_id=$comic_id&young_mode=0&from_page=search&platformname=android&productname=mht&pages=$i"
             })
         }
         return ret
@@ -163,7 +163,7 @@ class Manhuatai : HttpSource() {
     // 查询及分类查询
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         if (query != "") {
-            return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&size=7&orderby=click&search_key=$query&young_mode=0&platformname=android&productname=kmh")
+            return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&size=7&orderby=click&search_key=$query&young_mode=0&platformname=android&productname=mht")
         } else {
             val params = filters.map {
                 if (it is UriPartFilter) {

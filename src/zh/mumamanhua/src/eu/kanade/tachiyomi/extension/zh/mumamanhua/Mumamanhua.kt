@@ -101,9 +101,12 @@ class Mumamanhua : ParsedHttpSource() {
         "Host" to "cdn.zzdaye.com"
     ))
 
+    private fun requestGet(url: String) = GET(url, requestHTMLHeaders)
+    private fun imageGet(url: String) = GET(url, requestImageHeaders)
+
     // 点击量排序(人气)
     override fun popularMangaRequest(page: Int): Request {
-        return GET("$baseUrl/booklist?page=$page", requestHTMLHeaders)
+        return requestGet("$baseUrl/booklist?page=$page")
     }
 
     override fun popularMangaNextPageSelector(): String? = "section > a:has(img.nextb)"
@@ -117,12 +120,12 @@ class Mumamanhua : ParsedHttpSource() {
 
     // 重写访问漫画详细信息的访问方式,以添加访问头
     override fun mangaDetailsRequest(manga: SManga): Request {
-        return GET("$baseUrl" + manga.url, requestHTMLHeaders)
+        return requestGet("$baseUrl" + manga.url)
     }
 
     // 最新排序
     override fun latestUpdatesRequest(page: Int): Request {
-        return GET("$baseUrl/update?page=$page", requestHTMLHeaders)
+        return requestGet("$baseUrl/update?page=$page")
     }
 
     override fun latestUpdatesNextPageSelector(): String? = popularMangaNextPageSelector()
@@ -133,7 +136,7 @@ class Mumamanhua : ParsedHttpSource() {
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         return if (query != "") {
             val url = HttpUrl.parse("$baseUrl/search?keyword=$query&page=$page")?.newBuilder()
-            GET(url.toString(), requestHTMLHeaders)
+            requestGet(url.toString())
         } else {
             val params = filters.map {
                 if (it is UriPartFilter) {
@@ -141,7 +144,7 @@ class Mumamanhua : ParsedHttpSource() {
                 } else ""
             }.filter { it != "" }.joinToString("")
             val url = HttpUrl.parse("$baseUrl$params&page=$page")?.newBuilder()
-            GET(url.toString(), requestHTMLHeaders)
+            requestGet(url.toString())
         }
     }
 
@@ -187,7 +190,7 @@ class Mumamanhua : ParsedHttpSource() {
 
     // 重写访问漫画章节的访问方式,以添加访问头
     override fun chapterListRequest(manga: SManga): Request {
-        return GET("$baseUrl" + manga.url, requestHTMLHeaders)
+        return requestGet("$baseUrl" + manga.url)
     }
 
     // 漫画章节信息
@@ -204,7 +207,7 @@ class Mumamanhua : ParsedHttpSource() {
 
     // 重写章节进入查看图片页的访问方式,以添加请求头
     override fun pageListRequest(chapter: SChapter): Request {
-        return GET("$baseUrl" + chapter.url, requestHTMLHeaders)
+        return requestGet("$baseUrl" + chapter.url)
     }
 
     // 漫画图片信息
@@ -216,8 +219,8 @@ class Mumamanhua : ParsedHttpSource() {
     }
 
     // 重写图片的访问方式,以添加请求头
-    override fun imageUrlRequest(page: Page): Request {
-        return GET(page.url, requestImageHeaders)
+    override fun imageRequest(page: Page): Request {
+        return imageGet(page.imageUrl!!)
     }
 
     override fun imageUrlParse(document: Document): String = throw Exception("Not Used")

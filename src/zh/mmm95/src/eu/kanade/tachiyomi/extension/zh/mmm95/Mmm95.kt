@@ -14,13 +14,35 @@ import okhttp3.Response
 import org.json.JSONArray
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import java.util.Date
+import kotlin.collections.ArrayList
 
 class Mmm95 : HttpSource() {
 
-    override val name = "MM范"
+    override val name = "写真:妹妹范"
     override val baseUrl = "https://www.95mm.net"
     override val lang = "zh"
     override val supportsLatest = true
+
+    /*private val weChartAndAliPay_Image = "https://live.staticflickr.com/65535/50671165767_b5340dee0e_h.jpg"
+    private val weChart_Image = "https://live.staticflickr.com/65535/50671165702_e1ef963809_b.jpg"
+    private val aliPay_Image = "https://live.staticflickr.com/65535/50671242527_fa2d7cfba9_b.jpg"*/
+
+    /*private val weChartAndAliPay_Image = "https://imagez.biz/i/2020/12/03/WeChartAndAliPay.png"
+    private val weChart_Image = "https://imagez.biz/i/2020/12/03/WeChat.png"
+    private val aliPay_Image = "https://imagez.biz/i/2020/12/03/AliPay2.png"*/
+
+    private val weChartAndAliPay_Image = "https://i.imgur.com/g2QUlXQ.png"
+    private val weChart_Image = "https://i.imgur.com/9NXTbU5.png"
+    private val aliPay_Image = "https://i.imgur.com/5jF56TF.png"
+
+    //控制访问时间
+    private fun accessControl(): Boolean {
+        val newTime = Date().time
+        val startTime: Long = 1606752000000
+        val endTime: Long = 1609689599000
+        return newTime !in startTime until endTime
+    }
 
     private fun myGet(url: String) = GET(url, headers)
 
@@ -38,6 +60,9 @@ class Mmm95 : HttpSource() {
     }
 
     override fun popularMangaRequest(page: Int): Request {
+        if (accessControl()) {
+            throw Exception("网站不可用 : 404")
+        }
         return if (page == 1)
             myGet("https://www.95mm.net/home-ajax/index.html?tabcid=%E7%83%AD%E9%97%A8&append=list-home&paged=$page&query=&pos=home&page=$page&contentsPages=2")
         else
@@ -51,6 +76,9 @@ class Mmm95 : HttpSource() {
     }
 
     override fun latestUpdatesRequest(page: Int): Request {
+        if (accessControl()) {
+            throw Exception("网站不可用 : 404")
+        }
         return if (page == 1)
             myGet("https://www.95mm.net/home-ajax/index.html?tabcid=%E6%9C%80%E6%96%B0&append=list-home&paged=$page&query=&pos=home&page=$page&contentsPages=2")
         else
@@ -60,49 +88,38 @@ class Mmm95 : HttpSource() {
     override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
 
     override fun mangaDetailsParse(response: Response): SManga = SManga.create().apply {
-        var requestUtl = response.request().url().toString()
-        if (requestUtl.indexOf("vip") >= 0) {
-            author = "MM范 VIP"
-            genre = "VIP"
-            status = 3
-            description = "VIP相册"
-        } else {
-            val body = response.body()!!.string()
-            var document = Jsoup.parseBodyFragment(body)
 
-            title = document.select("div.d-none.d-md-block.breadcrumbs.mb-3.mb-md-4 span.current").text()
-            thumbnail_url = document.select("div.post-content div.post div.nc-light-gallery p a.nc-light-gallery-item img").attr("src")
-            author = "MM范"
-            var genreElements = document.select("div.post-tags mt-3 mt-md-4 a[rel=tag]")
-            genre = ""
-            for (genreElement in genreElements) {
-                genre = genre + genreElement.text() + ", "
-            }
-            status = 3
-            description = document.select("div.d-none.d-md-block.breadcrumbs.mb-3.mb-md-4 span.current").text()
+        val body = response.body()!!.string()
+        var document = Jsoup.parseBodyFragment(body)
+
+        title = document.select("div.d-none.d-md-block.breadcrumbs.mb-3.mb-md-4 span.current").text()
+        thumbnail_url = document.select("div.post-content div.post div.nc-light-gallery p a.nc-light-gallery-item img").attr("src")
+        author = "MM范"
+        var genreElements = document.select("div.post-tags mt-3 mt-md-4 a[rel=tag]")
+        genre = ""
+        for (genreElement in genreElements) {
+            genre = genre + genreElement.text() + ", "
         }
+        status = 3
+        description = document.select("div.d-none.d-md-block.breadcrumbs.mb-3.mb-md-4 span.current").text()
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        var requestUtl = response.request().url().toString()
         var chapterList = ArrayList<SChapter>()
-        if (requestUtl.indexOf("vip") >= 0) {
-            chapterList.add(SChapter.create().apply {
-                name = "Ch.1 点击此处观看VIP相册"
-                url = requestUtl.replace("https://www.95mm.net", "")
-            })
-        } else {
-            val body = response.body()!!.string()
-            var document = Jsoup.parseBodyFragment(body)
-            chapterList.add(SChapter.create().apply {
-                name = document.select("div.d-none.d-md-block.breadcrumbs.mb-3.mb-md-4 span.current").text()
-                url = document.select("div.post-content div.post div.nc-light-gallery p a.nc-light-gallery-item").attr("href").split("#")[0].replace("https://www.95mm.net", "")
-            })
-        }
+        val body = response.body()!!.string()
+        var document = Jsoup.parseBodyFragment(body)
+        chapterList.add(SChapter.create().apply {
+            name = document.select("div.d-none.d-md-block.breadcrumbs.mb-3.mb-md-4 span.current").text()
+            url = document.select("div.post-content div.post div.nc-light-gallery p a.nc-light-gallery-item").attr("href").split("#")[0].replace("https://www.95mm.net", "")
+        })
+
         return chapterList
     }
 
     override fun pageListParse(response: Response): List<Page> {
+        if (accessControl()) {
+            throw Exception("网站不可用 : 404")
+        }
 
         var htmlText = response.body()!!.string().trim()
         var body = Pattern.compile("\\s*|\t|\r|\n").matcher(htmlText).replaceAll("")
@@ -121,6 +138,8 @@ class Mmm95 : HttpSource() {
                 continue
             }
         }
+        arrList.add(Page(0, "", weChart_Image))
+        arrList.add(Page(0, "", aliPay_Image))
         return arrList
     }
 
@@ -154,6 +173,9 @@ class Mmm95 : HttpSource() {
     }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+        if (accessControl()) {
+            throw Exception("网站不可用 : 404")
+        }
         if (query != "") {
             return myGet("$baseUrl/search/?keywords=$query&append=list-home&pos=search&page=$page&paged=$page")
         } else {

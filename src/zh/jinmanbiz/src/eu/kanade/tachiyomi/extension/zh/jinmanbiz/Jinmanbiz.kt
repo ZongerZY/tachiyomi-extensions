@@ -31,9 +31,9 @@ import org.jsoup.select.Elements
 @Nsfw
 class Jinmanbiz : ParsedHttpSource() {
 
-    override val baseUrl: String = "https://18comic5.biz"
+    override val baseUrl: String = "https://18comic2.one" // 104.28.13.87  240ms
     override val lang: String = "zh"
-    override val name: String = "禁漫:5.biz shunt=5"
+    override val name: String = "禁漫:18comic2"
     override val supportsLatest: Boolean = true
 
     // 对只有一章的漫画进行判断条件

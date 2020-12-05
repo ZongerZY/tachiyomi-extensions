@@ -31,16 +31,17 @@ import org.jsoup.select.Elements
 @Nsfw
 class Jinmanorg : ParsedHttpSource() {
 
-    override val baseUrl: String = "https://18comic.org"
+    override val baseUrl: String = "https://18comic1.one"
     override val lang: String = "zh"
-    override val name: String = "禁漫:海外org"
+    override val name: String = "禁漫:18comic1"
     override val supportsLatest: Boolean = true
 
     // 对只有一章的漫画进行判断条件
     private var chapterArea = "a[class=col btn btn-primary dropdown-toggle reading]"
 
     private var myHeaders = Headers.of(mapOf(
-        "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36"
+        "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36",
+        "Cookie" to "shunt=5"
     ))
 
     private fun myGET(url: String) = GET(url, myHeaders)
