@@ -16,15 +16,14 @@ import org.jsoup.Jsoup
 import org.jsoup.select.Elements
 
 class Qiman5 : HttpSource() {
-    // 漫画栈 用HTML网页爬取
-    // 图片压缩格式 高清!page-1200-x 标清!page-100-x 流畅!page-800-x !
-    // banner-600-x  banner-800-x
-    // cover-800-x cover-600-x cover-600-x
 
     override val name = "奇漫屋"
     override val baseUrl = ""
     override val lang = "zh"
     override val supportsLatest = true
+
+    private val htmlUrl = "http://www.qiman6.com"
+
     private val numMap = mapOf<String, Int>(
         "0" to 0, "1" to 1, "2" to 2, "3" to 3, "4" to 4, "5" to 5, "6" to 6, "7" to 7, "8" to 8, "9" to 9, "a" to 10, "b" to 11, "c" to 12, "d" to 13, "e" to 14, "f" to 15, "g" to 16, "h" to 17, "i" to 18, "j" to 19, "k" to 20, "l" to 21, "m" to 22, "n" to 23, "o" to 24, "p" to 25, "q" to 26, "r" to 27, "s" to 28, "t" to 29, "u" to 30, "v" to 31, "w" to 32, "x" to 33, "y" to 34, "z" to 35, "A" to 36, "B" to 37, "C" to 38, "D" to 39, "E" to 40, "F" to 41, "G" to 42, "H" to 43, "I" to 44, "J" to 45, "K" to 46, "L" to 47, "M" to 48, "N" to 49,
         "O" to 50, "P" to 51, "Q" to 52, "R" to 53, "S" to 54, "T" to 55, "U" to 56, "V" to 57, "W" to 58, "X" to 59, "Y" to 60, "Z" to 61, "10" to 62, "11" to 63, "12" to 64, "13" to 65, "14" to 66, "15" to 67, "16" to 68, "17" to 69, "18" to 70, "19" to 71, "1a" to 72, "1b" to 73, "1c" to 74, "1d" to 75, "1e" to 76, "1f" to 77, "1g" to 78, "1h" to 79, "1i" to 80, "1j" to 81, "1k" to 82, "1l" to 83, "1m" to 84, "1n" to 85, "1o" to 86, "1p" to 87, "1q" to 88, "1r" to 89, "1s" to 90, "1t" to 91, "1u" to 92, "1v" to 93, "1w" to 94, "1x" to 95, "1y" to 96, "1z" to 97, "1A" to 98, "1B" to 99,
@@ -51,13 +50,13 @@ class Qiman5 : HttpSource() {
     private fun myGet(url: String) = GET(url, headers)
 
     override fun popularMangaRequest(page: Int): Request {
-        return myGet("http://www.qiman6.com/rank/1-$page.html")
+        return myGet("${htmlUrl}/rank/1-$page.html")
     }
 
     override fun popularMangaParse(response: Response): MangasPage = searchMangaParse(response)
 
     override fun latestUpdatesRequest(page: Int): Request {
-        return myGet("http://www.qiman6.com/rank/5-$page.html")
+        return myGet("${htmlUrl}/rank/5-$page.html")
     }
 
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
@@ -91,7 +90,7 @@ class Qiman5 : HttpSource() {
 
         val mangaId = Regex("""/(\d+)""").find(requestUrl)!!.value.replace("/", "")
 
-        var scapterJson = Jsoup.connect("http://www.qiman6.com/bookchapter/").data("id", mangaId).data("id2", "1").post().body().text().toString()
+        var scapterJson = Jsoup.connect("${htmlUrl}/bookchapter/").data("id", mangaId).data("id2", "1").post().body().text().toString()
 
         var chapterList = ArrayList<SChapter>()
 
@@ -99,7 +98,7 @@ class Qiman5 : HttpSource() {
         for (element in elements) {
             chapterList.add(SChapter.create().apply {
                 name = element.text().trim()
-                url = "http://www.qiman6.com" + element.attr("href")
+                url = "${htmlUrl}" + element.attr("href")
             })
         }
 
@@ -108,7 +107,7 @@ class Qiman5 : HttpSource() {
             var jsonObj = jsonArr.getJSONObject(i)
             chapterList.add(SChapter.create().apply {
                 name = jsonObj.getString("chaptername")
-                url = "http://www.qiman6.com/$mangaId/${jsonObj.getString("chapterid")}.html"
+                url = "${htmlUrl}/$mangaId/${jsonObj.getString("chapterid")}.html"
             })
         }
 
@@ -168,7 +167,7 @@ class Qiman5 : HttpSource() {
             mangas.add(SManga.create().apply {
                 title = mangaElement.select("p.title a").text()
                 thumbnail_url = mangaElement.select("div.book img.cover").attr("src")
-                url = "http://www.qiman6.com" + mangaElement.select("p.title a").attr("href")
+                url = "${htmlUrl}" + mangaElement.select("p.title a").attr("href")
             })
         }
         if (responseUrl.contains("search.php")) {
@@ -180,14 +179,14 @@ class Qiman5 : HttpSource() {
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         if (query != "") {
-            return GET("http://www.qiman6.com/search.php?keyword=$query")
+            return GET("${htmlUrl}/search.php?keyword=$query")
         } else {
             var params = filters.map {
                 if (it is UriPartFilter) {
                     it.toUriPart()
                 } else ""
             }.filter { it != "" }.joinToString("")
-            return myGet("http://www.qiman6.com$params-$page.html")
+            return myGet("${htmlUrl}$params-$page.html")
         }
     }
 

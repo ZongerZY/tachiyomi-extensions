@@ -1,0 +1,12 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+ext {
+    extName = 'Guoman8'
+    pkgNameSuffix = 'zh.guoman8'
+    extClass = '.Guoman8'
+    extVersionCode = 1
+    libVersion = '1.2'
+}
+
+apply from: "$rootDir/common.gradle"
