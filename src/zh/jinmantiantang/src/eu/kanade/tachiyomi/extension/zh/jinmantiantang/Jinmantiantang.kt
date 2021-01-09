@@ -1,11 +1,18 @@
 package eu.kanade.tachiyomi.extension.zh.jinmantiantang
 
+import android.app.Application
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Rect
+import android.support.v7.preference.EditTextPreference as LegacyEditTextPreference
+import android.support.v7.preference.PreferenceScreen as LegacyPreferenceScreen
+import androidx.preference.EditTextPreference
+import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.annotations.Nsfw
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.Page
@@ -17,7 +24,7 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
-import okhttp3.Headers
+import kotlin.math.floor
 import okhttp3.HttpUrl
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
@@ -27,29 +34,24 @@ import okhttp3.ResponseBody
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 @Nsfw
-class Jinmantiantang : ParsedHttpSource() {
+class Jinmantiantang : ConfigurableSource, ParsedHttpSource() {
 
     override val baseUrl: String = "https://18comic.bet" // 172.64.4.100 220ms
     override val lang: String = "zh"
     override val name: String = "禁漫天堂"
     override val supportsLatest: Boolean = true
 
-    // 对只有一章的漫画进行判断条件
-    private var chapterArea = "a[class=col btn btn-primary dropdown-toggle reading]"
-
-    private var myHeaders = Headers.of(mapOf(
-        "User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36",
-        "Cookie" to "shunt=5"
-    ))
-
-    private fun myGET(url: String) = GET(url, myHeaders)
-
     // 220980
     // 算法 html页面 1800 行左右
     // 图片开始分割的ID编号
-    val scramble_id = 220980
+    private val scrambleId = 220980
+
+    // 对只有一章的漫画进行判断条件
+    private var chapterArea = "a[class=col btn btn-primary dropdown-toggle reading]"
 
     // 处理URL请求
     override val client: OkHttpClient = network.cloudflareClient.newBuilder().addInterceptor(
@@ -57,7 +59,7 @@ class Jinmantiantang : ParsedHttpSource() {
             val url = chain.request().url().toString()
             val response = chain.proceed(chain.request())
             if (!url.contains("media/photos", ignoreCase = true)) return response // 对非漫画图片连接直接放行
-            if (url.substring(url.indexOf("photos/") + 7, url.lastIndexOf("/")).toInt() < scramble_id) return response // 对在漫画章节ID为220980之前的图片未进行图片分割,直接放行
+            if (url.substring(url.indexOf("photos/") + 7, url.lastIndexOf("/")).toInt() < scrambleId) return response // 对在漫画章节ID为220980之前的图片未进行图片分割,直接放行
             // 章节ID:220980(包含)之后的漫画(2020.10.27之后)图片进行了分割倒序处理
             val res = response.body()!!.byteStream().use {
                 decodeImage(it)
@@ -78,25 +80,25 @@ class Jinmantiantang : ParsedHttpSource() {
         // 水平分割10个小图
         val rows = 10
         // 未除尽像素
-        var remainder = (height % rows)
+        val remainder = (height % rows)
         // 创建新的图片对象
         val resultBitmap = Bitmap.createBitmap(input.width, input.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(resultBitmap)
         // 分割图片
         for (x in 0 until rows) {
             // 分割算法(详情见html源码页的方法"function scramble_image(img)")
-            var copyH = Math.floor(height / rows.toDouble()).toInt()
+            var copyH = floor(height / rows.toDouble()).toInt()
             var py = copyH * (x)
-            var y = height - (copyH * (x + 1)) - remainder
+            val y = height - (copyH * (x + 1)) - remainder
             if (x == 0) {
-                copyH = copyH + remainder
+                copyH += remainder
             } else {
-                py = py + remainder
+                py += remainder
             }
             // 要裁剪的区域
-            val crop = Rect(0, y, width, (height - (copyH * x) - remainder))
+            val crop = Rect(0, y, width, y + copyH)
             // 裁剪后应放置到新图片对象的区域
-            val splic = Rect(0, py, width, (py + copyH))
+            val splic = Rect(0, py, width, py + copyH)
 
             canvas.drawBitmap(input, crop, splic, null)
         }
@@ -108,24 +110,33 @@ class Jinmantiantang : ParsedHttpSource() {
 
     // 点击量排序(人气)
     override fun popularMangaRequest(page: Int): Request {
-        return myGET("$baseUrl/albums?o=mv&page=$page&screen=$defaultRemovedGenres")
+        return GET("$baseUrl/albums?o=mv&page=$page", headers)
     }
 
-    override fun popularMangaNextPageSelector(): String? = "a.prevnext"
-    override fun popularMangaSelector(): String = "div.col-xs-6.col-sm-6.col-md-4.col-lg-3.list-col div.well.well-sm"
+    override fun popularMangaNextPageSelector(): String = "a.prevnext"
+    override fun popularMangaSelector(): String {
+        val baseSelector = "div.col-xs-6.col-sm-6.col-md-4.col-lg-3.list-col div.well.well-sm"
+        val removedGenres = preferences.getString("BLOCK_GENRES_LIST", "")!!.substringBefore("//").trim()
+        // Extra selector is jquery-like selector, it uses regex to match element.text().
+        // If string after 標籤 contains any word of removedGenres, the element would be ignored.
+        return if (removedGenres != "")
+            baseSelector + ":not(:matches((?i).*標籤: .*(${removedGenres.split(' ').joinToString("|")}).*))"
+        else
+            baseSelector
+    }
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.select("span.video-title").text()
         setUrlWithoutDomain(element.select("a").first().attr("href"))
-        thumbnail_url = element.select("img").attr("data-original").split("?")[0].replace("_3x4", "")
+        thumbnail_url = element.select("img").attr("data-original").split("?")[0]
         author = element.select("div.title-truncate").select("a").first().text()
     }
 
     // 最新排序
     override fun latestUpdatesRequest(page: Int): Request {
-        return myGET("$baseUrl/albums?o=mr&page=$page&screen=$defaultRemovedGenres")
+        return GET("$baseUrl/albums?o=mr&page=$page", headers)
     }
 
-    override fun latestUpdatesNextPageSelector(): String? = popularMangaNextPageSelector()
+    override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
     override fun latestUpdatesSelector(): String = popularMangaSelector()
     override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
@@ -151,27 +162,19 @@ class Jinmantiantang : ParsedHttpSource() {
         } else {
             params = if (params == "") "/albums?" else params
             if (query == "") {
-                HttpUrl.parse("$baseUrl$params&page=$page&screen=$defaultRemovedGenres")?.newBuilder()
+                HttpUrl.parse("$baseUrl$params&page=$page")?.newBuilder()
             } else {
                 // 在搜索栏的关键词前添加-号来实现对筛选结果的过滤, 像 "-YAOI -扶他 -毛絨絨 -獵奇", 注意此时搜索功能不可用.
                 val removedGenres = query.split(" ").filter { it.startsWith("-") }.joinToString("+") { it.removePrefix("-") }
-                HttpUrl.parse("$baseUrl$params&page=$page&screen=$defaultRemovedGenres$removedGenres")?.newBuilder()
+                HttpUrl.parse("$baseUrl$params&page=$page&screen=$removedGenres")?.newBuilder()
             }
         }
-        return myGET(url.toString())
+        return GET(url.toString(), headers)
     }
 
-    // 默认过滤类型, 仅针对能够自己编译应用的读者
-    private val defaultRemovedGenres: String = "" // like ”YAOI+扶他+毛絨絨+獵奇+“
-
-    override fun searchMangaNextPageSelector(): String? = popularMangaNextPageSelector()
+    override fun searchMangaNextPageSelector(): String = popularMangaNextPageSelector()
     override fun searchMangaSelector(): String = popularMangaSelector()
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
-
-    // 查询漫画详情请求
-    override fun mangaDetailsRequest(manga: SManga): Request {
-        return myGET("$baseUrl${manga.url}")
-    }
 
     // 漫画详情
     // url网址 , title标题 , artist艺术家 , author作者 , description描述 , genre类型 , thumbnail_url缩图网址 , initialized是否初始化
@@ -180,7 +183,8 @@ class Jinmantiantang : ParsedHttpSource() {
     override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
         determineChapterInfo(document)
         title = document.select("div.panel-heading").select("div.pull-left").first().text()
-        thumbnail_url = document.select("img.lazy_img.img-responsive").attr("src").split("?")[0].replace("_3x4", "")
+        // keep thumbnail_url same as the one in popularMangaFromElement()
+        thumbnail_url = document.select("img.lazy_img.img-responsive").attr("src").split("?")[0].replace(".jpg", "_3x4.jpg")
         author = selectAuthor(document)
         artist = author
         genre = selectDetailsStatusAndGenre(document, 0).trim().split(" ").joinToString(", ")
@@ -188,7 +192,7 @@ class Jinmantiantang : ParsedHttpSource() {
         // When the index passed by the "selectDetailsStatusAndGenre(document: Document, index: Int)" index is 1,
         // it will definitely return a String type of 0, 1 or 2. This warning can be ignored
         status = selectDetailsStatusAndGenre(document, 1).trim().toInt()
-        description = document.select("div.p-t-5.p-b-5")[7].text().removePrefix("敘述：")
+        description = document.select("#intro-block .p-t-5.p-b-5").text().substringAfter("敘述：").trim()
     }
 
     // 查询作者信息
@@ -257,18 +261,8 @@ class Jinmantiantang : ParsedHttpSource() {
         }
     }
 
-    // 查询章节信息请求
-    override fun chapterListRequest(manga: SManga): Request {
-        return myGET("$baseUrl${manga.url}")
-    }
-
     override fun chapterListParse(response: Response): List<SChapter> {
         return super.chapterListParse(response).asReversed()
-    }
-
-    // 查询漫画界面请求
-    override fun pageListRequest(chapter: SChapter): Request {
-        return myGET("$baseUrl${chapter.url}")
     }
 
     // 漫画图片信息
@@ -285,7 +279,7 @@ class Jinmantiantang : ParsedHttpSource() {
                 }
             }
             return document.select("a.prevnext").firstOrNull()
-                ?.let { internalParse(client.newCall(myGET(it.attr("abs:href"))).execute().asJsoup(), pages) } ?: pages
+                ?.let { internalParse(client.newCall(GET(it.attr("abs:href"), headers)).execute().asJsoup(), pages) } ?: pages
         }
 
         return internalParse(document, mutableListOf())
@@ -344,7 +338,7 @@ class Jinmantiantang : ParsedHttpSource() {
             Pair("巨乳", "/search/photos?search_query=巨乳&"),
             Pair("贫乳", "/search/photos?search_query=貧乳&"),
             Pair("女王", "/search/photos?search_query=女王&"),
-            Pair("教室", "/search/photos?search_query=教師&"),
+            Pair("教师", "/search/photos?search_query=教師&"),
             Pair("女仆", "/search/photos?search_query=女僕&"),
             Pair("护士", "/search/photos?search_query=護士&"),
             Pair("泳裝", "/search/photos?search_query=泳裝&"),
@@ -384,8 +378,8 @@ class Jinmantiantang : ParsedHttpSource() {
     private class SortFilter : UriPartFilter(
         "排序",
         arrayOf(
-            Pair("最多订阅", "o=mv&"),
             Pair("最新", "o=mr&"),
+            Pair("最多浏览", "o=mv&"),
             Pair("最多爱心", "o=tf&"),
             Pair("最多图片", "o=mp&")
         )
@@ -414,5 +408,42 @@ class Jinmantiantang : ParsedHttpSource() {
     ) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray(), defaultValue) {
         open fun toUriPart() = vals[state].second
+    }
+
+    private val preferences: SharedPreferences by lazy {
+        Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
+    }
+
+    private val BLOCK_PREF_TITLE = "屏蔽词列表"
+    private val BLOCK_PREF_DEFAULT = "// 例如 \"YAOI cos 扶他 毛絨絨 獵奇 韩漫 韓漫\", " +
+        "关键词之间用空格分离, 大小写不敏感, \"//\"后的字符会被忽略"
+    private val BLOCK_PREF_DIALOGTITLE = "关键词列表"
+
+    override fun setupPreferenceScreen(screen: PreferenceScreen) {
+        EditTextPreference(screen.context).apply {
+            key = "BLOCK_GENRES_LIST"
+            title = BLOCK_PREF_TITLE
+            setDefaultValue(BLOCK_PREF_DEFAULT)
+            dialogTitle = BLOCK_PREF_DIALOGTITLE
+            setOnPreferenceChangeListener { _, newValue ->
+                preferences.edit().putString("BLOCK_GENRES_LIST", newValue as String).commit()
+            }
+        }.let {
+            screen.addPreference(it)
+        }
+    }
+
+    override fun setupPreferenceScreen(screen: LegacyPreferenceScreen) {
+        LegacyEditTextPreference(screen.context).apply {
+            key = "BLOCK_GENRES_LIST"
+            title = BLOCK_PREF_TITLE
+            setDefaultValue(BLOCK_PREF_DEFAULT)
+            dialogTitle = BLOCK_PREF_DIALOGTITLE
+            setOnPreferenceChangeListener { _, newValue ->
+                preferences.edit().putString("BLOCK_GENRES_LIST", newValue as String).commit()
+            }
+        }.let {
+            screen.addPreference(it)
+        }
     }
 }

@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import java.util.Date
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import okhttp3.Request
@@ -31,17 +30,17 @@ class Mm95 : HttpSource() {
     private val weChart_Image = "https://imagez.biz/i/2020/12/03/WeChat.png"
     private val aliPay_Image = "https://imagez.biz/i/2020/12/03/AliPay2.png"*/
 
-    private val weChartAndAliPay_Image = "https://i.imgur.com/g2QUlXQ.png"
-    private val weChart_Image = "https://i.imgur.com/9NXTbU5.png"
-    private val aliPay_Image = "https://i.imgur.com/5jF56TF.png"
+    // private val weChartAndAliPay_Image = "https://i.imgur.com/g2QUlXQ.png"
+    // private val weChart_Image = "https://i.imgur.com/9NXTbU5.png"
+    // private val aliPay_Image = "https://i.imgur.com/5jF56TF.png"
 
     // 控制访问时间
-    private fun accessControl(): Boolean {
+    /*private fun accessControl(): Boolean {
         val newTime = Date().time
         val startTime: Long = 1606752000000
         val endTime: Long = 1614528001000
         return newTime !in startTime until endTime
-    }
+    }*/
 
     private val a9199 = """["https://cdn.zzdaye.com/images/vip/6/f/a/6fa51333-f084-45d7-878b-73d9b9e6ebae.jpg","https://cdn.zzdaye.com/images/vip/d/0/f/d0f5f53f-05f4-4ce4-aa3e-732da7f17b9e.jpg","https://cdn.zzdaye.com/images/vip/c/2/7/c279498b-c286-4c96-b868-499c2f6a81d2.jpg","https://cdn.zzdaye.com/images/vip/c/8/0/c800bf49-dfc7-4188-8ed0-b2a8fe7e7f68.jpg","https://cdn.zzdaye.com/images/vip/c/8/8/c8850ea6-0c2f-41da-94c8-1c0ae5b4c3e7.jpg","https://cdn.zzdaye.com/images/vip/4/2/b/42bf5763-9fb2-4291-8573-71eacb2d1b3c.jpg","https://cdn.zzdaye.com/images/vip/4/a/2/4a259bec-9b5d-4877-bbfb-7ba6391722d9.jpg","https://cdn.zzdaye.com/images/vip/b/3/a/b3a4f529-fd40-4246-98e4-cc593734d702.jpg","https://cdn.zzdaye.com/images/vip/6/3/8/6389e6eb-612c-4f22-88fb-d389aed75838.jpg","https://cdn.zzdaye.com/images/vip/4/e/9/4e9f5bfe-92f4-4edb-98dc-ad759e6443f5.jpg","https://cdn.zzdaye.com/images/vip/a/2/e/a2eac0c2-6ff7-4cc4-bf75-c17a1d1c96ef.jpg","https://cdn.zzdaye.com/images/vip/7/0/0/700c2022-ab34-46e1-b756-83570b030df9.jpg","https://cdn.zzdaye.com/images/vip/8/9/2/892a7cc4-fdd0-4170-a7fe-7b4176896ebc.jpg","https://cdn.zzdaye.com/images/vip/a/6/4/a6473b3e-d425-4d1f-9939-4c019c7f285e.jpg","https://cdn.zzdaye.com/images/vip/7/4/d/74ddc95a-2728-459b-bcf4-02e1a6fcfc56.jpg","https://cdn.zzdaye.com/images/vip/7/2/f/72f709e0-b1e2-4ed1-ae5e-9862c2a16f2e.jpg","https://cdn.zzdaye.com/images/vip/6/b/5/6b5a35ec-970a-42e5-964e-2c7f87ed57b6.jpg","https://cdn.zzdaye.com/images/vip/e/f/9/ef9b73f8-dd55-4717-8dcd-5e06b11dc438.jpg","https://cdn.zzdaye.com/images/vip/6/a/0/6a0df8e4-16e0-4de0-b3d3-de6152392d73.jpg","https://cdn.zzdaye.com/images/vip/a/3/f/a3f81e0e-e9c8-453b-9c0e-038d57bb6a01.jpg","https://cdn.zzdaye.com/images/vip/9/3/5/935463a7-ab96-45de-9c7f-4deaf2e9b576.jpg","https://cdn.zzdaye.com/images/vip/1/1/8/118ca83a-7dc9-4705-84a7-bbd26f6d32b8.jpg","https://cdn.zzdaye.com/images/vip/d/a/e/dae81a60-a913-4f4a-ba6f-20720ca4f2d1.jpg","https://cdn.zzdaye.com/images/vip/2/7/6/27692894-79db-4f83-a477-4ad1b19fcd3c.jpg","https://cdn.zzdaye.com/images/vip/d/0/6/d0615488-e5e6-41e6-8e96-1163c58a6d3a.jpg","https://cdn.zzdaye.com/images/vip/8/a/d/8adb3548-7f19-467d-83d1-2eab5a58dcb3.jpg","https://cdn.zzdaye.com/images/vip/c/8/8/c88ca326-d7eb-44a8-8aa0-a1d901f2e65e.jpg","https://cdn.zzdaye.com/images/vip/3/8/9/389457cd-9b0f-4a6f-bf7f-1c93a9379d35.jpg","https://cdn.zzdaye.com/images/vip/1/1/f/11fbe00c-e0dc-40cc-a427-6c9a6de5645c.jpg","https://cdn.zzdaye.com/images/vip/e/2/e/e2ea3fc0-e9e3-4865-b1ee-42f6026fb19d.jpg","https://cdn.zzdaye.com/images/vip/e/6/9/e69af198-9715-447f-9930-d7f34665b7ba.jpg","https://cdn.zzdaye.com/images/vip/f/f/b/ffbccbdb-2d7c-4082-b5bc-fc67456f3ec8.jpg","https://cdn.zzdaye.com/images/vip/f/8/3/f83284b1-cf08-4b5f-a65a-e0685f2a6780.jpg","https://cdn.zzdaye.com/images/vip/0/1/e/01e59f00-3122-4d73-bf7f-7480816d6f67.jpg","https://cdn.zzdaye.com/images/vip/c/d/b/cdb4ce6e-6c9e-43c9-8723-860163217129.jpg","https://cdn.zzdaye.com/images/vip/d/7/6/d76a075e-2bc2-4078-a63e-27f514803130.jpg","https://cdn.zzdaye.com/images/vip/c/7/8/c788c765-6a27-44ce-8e10-837686f68ac6.jpg","https://cdn.zzdaye.com/images/vip/f/b/f/fbf01629-ecd3-4752-bd9c-804bc085ca0e.jpg","https://cdn.zzdaye.com/images/vip/e/0/c/e0c3053b-a003-4bae-a48a-4ba9fb9db6d9.jpg","https://cdn.zzdaye.com/images/vip/3/7/9/3794ad03-0ab3-4786-867c-50f98dc190c5.jpg","https://cdn.zzdaye.com/images/vip/7/7/1/771c397f-1fc8-4e6b-87aa-294ef201bfcd.jpg","https://cdn.zzdaye.com/images/vip/f/1/7/f17bcfcc-a5b7-4ab2-8f25-496b5bd8c2bb.jpg","https://cdn.zzdaye.com/images/vip/8/1/3/813577fc-7e31-4692-9949-9195eb8a40ce.jpg"]"""
     private val a9200 = """["https://cdn.zzdaye.com/images/vip/1/e/d/1ed21fa2-7df6-403b-b613-a9196feeb8f1.jpg","https://cdn.zzdaye.com/images/vip/3/8/1/3819bdee-38cf-4771-aafb-2e84a41f1c45.jpg","https://cdn.zzdaye.com/images/vip/3/6/7/367c90d1-6eca-4aa7-bdb4-60e84563c8b9.jpg","https://cdn.zzdaye.com/images/vip/9/b/4/9b478e84-fafe-4201-9bff-82a69cccc1eb.jpg","https://cdn.zzdaye.com/images/vip/4/c/2/4c2c1c83-cd25-465a-b792-af88add06e7c.jpg","https://cdn.zzdaye.com/images/vip/4/a/b/4ab5eea7-fd61-4655-b416-4a1a61dc1cbf.jpg","https://cdn.zzdaye.com/images/vip/e/9/4/e9408462-6076-41ad-89f3-f2a1757d2993.jpg","https://cdn.zzdaye.com/images/vip/9/5/a/95a08724-403a-47a3-b66a-215539c6dce6.jpg","https://cdn.zzdaye.com/images/vip/d/b/8/db8e40f8-cdf6-4332-bb40-63eb18c70052.jpg","https://cdn.zzdaye.com/images/vip/d/1/c/d1cb9b25-9f52-4b0f-b32a-5078c87bd7e2.jpg","https://cdn.zzdaye.com/images/vip/6/0/9/6098dd73-2473-4be4-9e09-12d91f8035c8.jpg","https://cdn.zzdaye.com/images/vip/6/d/8/6d8fb658-2c68-4db8-a8ee-d4d53d392c73.jpg","https://cdn.zzdaye.com/images/vip/6/b/6/6b6231ba-b6d0-4131-b46f-c6437d8f1c2b.jpg","https://cdn.zzdaye.com/images/vip/3/3/a/33a53c78-d5df-4bf7-8a2a-3bca55e7b1ed.jpg","https://cdn.zzdaye.com/images/vip/d/6/d/d6d0bff1-bc17-48f8-94d7-c43e90ee672d.jpg","https://cdn.zzdaye.com/images/vip/c/7/8/c784e69d-e451-4163-bbec-aa32136d8947.jpg","https://cdn.zzdaye.com/images/vip/9/0/5/905e63be-85d0-4cfe-9a0d-a2cadbede436.jpg","https://cdn.zzdaye.com/images/vip/a/6/3/a63b6716-c34d-4b3a-9a1d-424a1fc59e4f.jpg","https://cdn.zzdaye.com/images/vip/a/c/a/aca55834-caaf-4237-a056-6e1542a1ef93.jpg","https://cdn.zzdaye.com/images/vip/e/2/8/e28d26ec-1ff3-49b7-91eb-58d92fedf66f.jpg","https://cdn.zzdaye.com/images/vip/7/f/0/7f000323-61ac-4762-b227-29d73368f574.jpg","https://cdn.zzdaye.com/images/vip/1/5/3/1538bf7a-2923-4fc6-a571-43a9f215d2fc.jpg","https://cdn.zzdaye.com/images/vip/6/9/a/69a88cc4-d9e6-493b-90e6-ddd3dacdfc5f.jpg","https://cdn.zzdaye.com/images/vip/2/8/6/2868eed1-7a41-43e3-b53c-3de1ad0e881b.jpg","https://cdn.zzdaye.com/images/vip/8/a/7/8a7ad972-230d-4829-80fe-9d1ad92160e9.jpg","https://cdn.zzdaye.com/images/vip/8/1/1/8113a20f-6e72-44d5-afe1-d56b3bec2f9e.jpg","https://cdn.zzdaye.com/images/vip/2/d/a/2daa0e8f-d90e-4a02-8f67-a799980889b8.jpg","https://cdn.zzdaye.com/images/vip/0/0/9/00944066-7f97-470c-a0fc-2103cbcea6d1.jpg","https://cdn.zzdaye.com/images/vip/0/f/2/0f20e31f-e89a-4381-8932-e8b8ce0a9c03.jpg","https://cdn.zzdaye.com/images/vip/d/f/b/dfb6ce73-a2b9-4c80-a196-aa5688f40c01.jpg","https://cdn.zzdaye.com/images/vip/b/a/2/ba286adb-37c4-440e-bb81-ae79207a648d.jpg","https://cdn.zzdaye.com/images/vip/7/c/2/7c2c1ddb-92b8-43cb-84dd-26af599fdd40.jpg","https://cdn.zzdaye.com/images/vip/c/0/d/c0da208a-b3b2-4911-afb0-375e0097d96d.jpg","https://cdn.zzdaye.com/images/vip/d/e/0/de0fe28e-54e9-482b-920d-cc77b2f02679.jpg","https://cdn.zzdaye.com/images/vip/e/d/e/ede983f2-f658-455e-8811-65d5ec0cfad3.jpg","https://cdn.zzdaye.com/images/vip/d/a/8/da88c774-ef04-434b-ab8d-8b6c208fa653.jpg","https://cdn.zzdaye.com/images/vip/8/4/7/84794843-335b-4021-ad93-219c4c944664.jpg","https://cdn.zzdaye.com/images/vip/9/8/d/98dcae44-fce9-4706-898e-2cfd81989eeb.jpg","https://cdn.zzdaye.com/images/vip/0/0/d/00d1183d-b69b-47bd-85db-1b1443317251.jpg","https://cdn.zzdaye.com/images/vip/6/2/b/62b11273-eac2-44ce-9968-74d56b4e4750.jpg","https://cdn.zzdaye.com/images/vip/c/c/a/cca1c3d6-4a67-41be-8a82-c0215827fbf2.jpg","https://cdn.zzdaye.com/images/vip/4/3/f/43f1eba4-5f2e-47ec-8240-650abe7290f5.jpg","https://cdn.zzdaye.com/images/vip/4/e/5/4e55e28f-8e4c-4fba-a0ad-a56eb696134e.jpg","https://cdn.zzdaye.com/images/vip/e/1/e/e1ecac81-4a25-4bbf-9676-5d6c14a6ee49.jpg","https://cdn.zzdaye.com/images/vip/5/5/0/550dde93-aec6-4535-a02f-3a64ed09870d.jpg","https://cdn.zzdaye.com/images/vip/6/d/7/6d7b024f-8a96-47a5-9687-af17dd42f6f4.jpg","https://cdn.zzdaye.com/images/vip/e/b/6/eb64d819-f6c2-47af-999c-36f477cb5c95.jpg","https://cdn.zzdaye.com/images/vip/f/9/4/f94fafbd-312f-45b7-8d28-184ba0f1ce9f.jpg"]"""
@@ -259,9 +258,6 @@ class Mm95 : HttpSource() {
     }
 
     override fun popularMangaRequest(page: Int): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         return if (page == 1)
             myGet("https://www.95mm.net/home-ajax/index.html?tabcid=%E7%83%AD%E9%97%A8&append=list-home&paged=$page&query=&pos=home&page=$page&contentsPages=2")
         else
@@ -275,9 +271,6 @@ class Mm95 : HttpSource() {
     }
 
     override fun latestUpdatesRequest(page: Int): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         return if (page == 1)
             myGet("https://www.95mm.net/home-ajax/index.html?tabcid=%E6%9C%80%E6%96%B0&append=list-home&paged=$page&query=&pos=home&page=$page&contentsPages=2")
         else
@@ -330,9 +323,6 @@ class Mm95 : HttpSource() {
     }
 
     override fun pageListParse(response: Response): List<Page> {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         var requestUtl = response.request().url().toString()
         if (requestUtl.indexOf("vip") >= 0) {
             var id = requestUtl.split("vip-")[1]
@@ -341,8 +331,6 @@ class Mm95 : HttpSource() {
             for (i in 0 until vipPageArray.length()) {
                 arrList.add(Page(i, "", vipPageArray.getString(i)))
             }
-            arrList.add(Page(0, "", weChart_Image))
-            arrList.add(Page(0, "", aliPay_Image))
             return arrList
         } else {
             var htmlText = response.body()!!.string().trim()
@@ -362,8 +350,6 @@ class Mm95 : HttpSource() {
                     continue
                 }
             }
-            arrList.add(Page(0, "", weChart_Image))
-            arrList.add(Page(0, "", aliPay_Image))
             return arrList
         }
     }
@@ -409,9 +395,6 @@ class Mm95 : HttpSource() {
     }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         if (query.equals("vip", true)) {
             return myGet("$baseUrl/search/?keywords=vip&append=list-home&pos=search&page=$page&paged=$page")
         } else if (query != "") {
@@ -539,6 +522,7 @@ class Mm95 : HttpSource() {
             else -> a9203
         }
     }
+
     // &page=2&paged=2
     // Pair("异域美景", "/category-6/list-1/index.html?append=list-home&pos=cate"),
     // Pair("怀旧古风", "/category-3/list-1/index.html?append=list-home&pos=cate"),

@@ -5,7 +5,7 @@ ext {
     extName = 'Zongerzyyitu'
     pkgNameSuffix = 'zh.zongerzyyitu'
     extClass = '.Zongerzyyitu'
-    extVersionCode = 1
+    extVersionCode = 2
     libVersion = '1.2'
 }
 

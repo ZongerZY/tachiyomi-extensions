@@ -82,7 +82,11 @@ class Xianmanwang : HttpSource() {
         var imageBaseUrl = try {
             Regex("""\'(.*?)\'""").find(Regex("""var\s+imgDomain\s+\=\s+\'((https|http|ftp|rtsp|mms)?:\/\/)([^\s]+)(\/?)\'""").find(body)!!.value)!!.value.replace("\'", "")
         } catch (e: Exception) {
-            htmlUrl
+            "https://res.xiaoqinre.com/"
+        }
+
+        if (imageBaseUrl == "") {
+            imageBaseUrl = "https://res.xiaoqinre.com/"
         }
         var imageUrlStr = Regex("""\[(.*?)\]""").find(Regex("""var\s+picdata\s+\=\s+\[(.*?)\]""").find(body)!!.value)!!.value
 
@@ -108,7 +112,7 @@ class Xianmanwang : HttpSource() {
         for (mangaElement in mangasElements) {
             mangas.add(SManga.create().apply {
                 title = mangaElement.select("div.mh-item-detali h2.title a").text()
-                thumbnail_url = mangaElement.select("a p.mh-cover").attr("style").split("url(")[1].split("/suolue")[0]
+                thumbnail_url = mangaElement.select("a p.mh-cover").attr("style").split("url(")[1].split(")")[0]
                 url = "${htmlUrl}${mangaElement.select("div.mh-item-detali h2.title a").attr("href")}"
             })
         }

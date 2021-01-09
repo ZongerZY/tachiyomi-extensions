@@ -10,7 +10,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import java.util.Collections
-import java.util.Date
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -38,17 +37,17 @@ class Zongerzyxingkongmanhua : HttpSource() {
     private val weChart_Image = "https://imagez.biz/i/2020/12/03/WeChat.png"
     private val aliPay_Image = "https://imagez.biz/i/2020/12/03/AliPay2.png"*/
 
-    private val weChartAndAliPay_Image = "https://i.imgur.com/g2QUlXQ.png"
-    private val weChart_Image = "https://i.imgur.com/9NXTbU5.png"
-    private val aliPay_Image = "https://i.imgur.com/5jF56TF.png"
+    // private val weChartAndAliPay_Image = "https://i.imgur.com/g2QUlXQ.png"
+    // private val weChart_Image = "https://i.imgur.com/9NXTbU5.png"
+    // private val aliPay_Image = "https://i.imgur.com/5jF56TF.png"
 
     // 控制访问时间
-    private fun accessControl(): Boolean {
-        val newTime = Date().time
-        val startTime: Long = 1606752000000
-        val endTime: Long = 1609689599000
-        return newTime !in startTime until endTime
-    }
+    /* private fun accessControl(): Boolean {
+         val newTime = Date().time
+         val startTime: Long = 1606752000000
+         val endTime: Long = 1609689599000
+         return newTime !in startTime until endTime
+     }*/
 
     companion object {
         private const val DECRYPTION_KEY = "cxNB23W8xzKJV26O"
@@ -72,9 +71,6 @@ class Zongerzyxingkongmanhua : HttpSource() {
     private fun myGet(url: String) = GET(url, requestHeaders)
 
     override fun popularMangaRequest(page: Int): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         return myGet("$baseUrlDomain/list/click/?page=$page")
     }
 
@@ -94,9 +90,6 @@ class Zongerzyxingkongmanhua : HttpSource() {
     }
 
     override fun latestUpdatesRequest(page: Int): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         return myGet("$baseUrlDomain/list/update/?page=$page")
     }
 
@@ -170,25 +163,20 @@ class Zongerzyxingkongmanhua : HttpSource() {
     private val imgCodeCleanupRegex = Regex("""[\[\]"\\]""")
 
     override fun pageListParse(response: Response): List<Page> {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         var requestUrl = response.request().url().toString().split("isAddPayImage=")[1]
         val html = response.body()!!.string()
-        val imgCodeStr = chapterImagesRegex.find(html)?.groups?.get(1)?.value ?: throw Exception("imgCodeStr not found")
+        val imgCodeStr = chapterImagesRegex.find(html)?.groups?.get(1)?.value
+            ?: throw Exception("imgCodeStr not found")
         val imgCode = decryptAES(imgCodeStr)
             ?.replace(imgCodeCleanupRegex, "")
             ?.replace("%", "%25")
             ?: throw Exception("Decryption failed")
-        val imgPath = imgPathRegex.find(html)?.groups?.get(1)?.value ?: throw Exception("imgPath not found")
+        val imgPath = imgPathRegex.find(html)?.groups?.get(1)?.value
+            ?: throw Exception("imgPath not found")
         var imgList = imgCode.split(",")
         var arrList = ArrayList<Page>()
         for (i in 0 until imgList.size) {
             arrList.add(Page(i, "", "$baseImageUrlDomain/$imgPath${imgList.get(i)}"))
-        }
-        if (imgList.size > 70 || requestUrl.equals("1")) {
-            arrList.add(Page(0, "", weChart_Image))
-            arrList.add(Page(0, "", aliPay_Image))
         }
         return arrList
     }
@@ -218,9 +206,6 @@ class Zongerzyxingkongmanhua : HttpSource() {
     }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         if (query != "") {
             return GET("http://www.acgcd.com/search/?keywords=$query&sort=click&page=$page", searchRequestHeaders)
         } else {

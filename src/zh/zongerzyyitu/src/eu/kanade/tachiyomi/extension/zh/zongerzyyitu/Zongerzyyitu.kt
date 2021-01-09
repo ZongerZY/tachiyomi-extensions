@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import java.util.Date
 import kotlin.collections.ArrayList
 import okhttp3.Request
 import okhttp3.Response
@@ -18,6 +17,7 @@ import org.jsoup.nodes.Document
 class Zongerzyyitu : HttpSource() {
 
     override val name = "写真:万图图库"
+
     // 亿图全景图库
     override val baseUrl = ""
     override val lang = "zh"
@@ -31,33 +31,27 @@ class Zongerzyyitu : HttpSource() {
     private val weChart_Image = "https://imagez.biz/i/2020/12/03/WeChat.png"
     private val aliPay_Image = "https://imagez.biz/i/2020/12/03/AliPay2.png"*/
 
-    private val weChartAndAliPay_Image = "https://i.imgur.com/g2QUlXQ.png"
-    private val weChart_Image = "https://i.imgur.com/9NXTbU5.png"
-    private val aliPay_Image = "https://i.imgur.com/5jF56TF.png"
+    // private val weChartAndAliPay_Image = "https://i.imgur.com/g2QUlXQ.png"
+    // private val weChart_Image = "https://i.imgur.com/9NXTbU5.png"
+    // private val aliPay_Image = "https://i.imgur.com/5jF56TF.png"
 
     // 控制访问时间
-    private fun accessControl(): Boolean {
+    /*private fun accessControl(): Boolean {
         val newTime = Date().time
         val startTime: Long = 1606752000000
         val endTime: Long = 1609689599000
         return newTime !in startTime until endTime
-    }
+    }*/
 
     private fun myGet(url: String) = GET(url, headers)
 
     override fun popularMangaRequest(page: Int): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         if (page == 1) return myGet("https://www.yeitu.net/meinv/xinggan/index.html") else return myGet("https://www.yeitu.net/meinv/xinggan/$page.html")
     }
 
     override fun popularMangaParse(response: Response): MangasPage = searchMangaParse(response)
 
     override fun latestUpdatesRequest(page: Int): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         if (page == 1) return myGet("https://www.yeitu.net/meinv/xinggan/index.html") else return myGet("https://www.yeitu.net/meinv/xinggan/$page.html")
     }
 
@@ -101,9 +95,6 @@ class Zongerzyyitu : HttpSource() {
     }
 
     override fun pageListParse(response: Response): List<Page> {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         val body = response.body()!!.string()
         var document = Jsoup.parseBodyFragment(body)
         if (document.select("#pages").select("a").size == 0) {
@@ -112,16 +103,12 @@ class Zongerzyyitu : HttpSource() {
                 var imageElements = document.select("div.picture div.img_box img")
                 for (i in 0 until imageElements.size)
                     arrList.add(Page(i, "", imageElements.get(i).attr("src")))
-                arrList.add(Page(0, "", weChart_Image))
-                arrList.add(Page(0, "", aliPay_Image))
                 return arrList
             } else {
                 var arrList = ArrayList<Page>()
                 var imageElements = document.select("div.picture div.picbox img")
                 for (i in 0 until imageElements.size)
                     arrList.add(Page(i, "", imageElements.get(i).attr("src")))
-                arrList.add(Page(0, "", weChart_Image))
-                arrList.add(Page(0, "", aliPay_Image))
                 return arrList
             }
         } else {
@@ -131,8 +118,6 @@ class Zongerzyyitu : HttpSource() {
             for (i in 2 until pageNum + 1) {
                 arrList.add(Page(i - 1, response.request().url().toString().split(".html")[0] + "_$i" + ".html"))
             }
-            arrList.add(Page(0, "", weChart_Image))
-            arrList.add(Page(0, "", aliPay_Image))
             return arrList
         }
     }
@@ -220,9 +205,6 @@ class Zongerzyyitu : HttpSource() {
     }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         if (query != "") {
             return myGet("https://www.yeitu.net/index.php?m=search&c=index&a=init&typeid=&siteid=1&q=$query&page=$page")
         } else {

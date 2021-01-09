@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.zh.kanmanhua886
+package eu.kanade.tachiyomi.extension.zh.mkanmanhua886
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Filter

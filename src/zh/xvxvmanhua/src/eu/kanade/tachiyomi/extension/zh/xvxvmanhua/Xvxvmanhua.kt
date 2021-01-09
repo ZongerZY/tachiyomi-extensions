@@ -24,7 +24,7 @@ class Xvxvmanhua : HttpSource() {
     override val supportsLatest = true
 
     private val jsonUrl = "http://haosou.xxmh0.com"
-    private val imageUrl = "http://171io.dgskenuo.com"
+    private val imageUrl = "http://9img.santei.net"
 
     private var requestJsonHeaders = Headers.of(mapOf(
         "Cache-Control" to "application/json",

@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import java.util.Date
 import kotlin.collections.ArrayList
 import okhttp3.Headers
 import okhttp3.Request
@@ -33,17 +32,9 @@ class Zongerzysealegend : HttpSource() {
     private val weChart_Image = "https://imagez.biz/i/2020/12/03/WeChat.png"
     private val aliPay_Image = "https://imagez.biz/i/2020/12/03/AliPay2.png"*/
 
-    private val weChartAndAliPay_Image = "https://i.imgur.com/g2QUlXQ.png"
-    private val weChart_Image = "https://i.imgur.com/9NXTbU5.png"
-    private val aliPay_Image = "https://i.imgur.com/5jF56TF.png"
-
-    // 控制访问时间
-    private fun accessControl(): Boolean {
-        val newTime = Date().time
-        val startTime: Long = 1606752000000
-        val endTime: Long = 1609689599000
-        return newTime !in startTime until endTime
-    }
+    // private val weChartAndAliPay_Image = "https://i.imgur.com/g2QUlXQ.png"
+    // private val weChart_Image = "https://i.imgur.com/9NXTbU5.png"
+    // private val aliPay_Image = "https://i.imgur.com/5jF56TF.png"
 
     private var requestJsonHeaders = Headers.of(mapOf(
         "Cache-Control" to "application/json",
@@ -86,9 +77,6 @@ class Zongerzysealegend : HttpSource() {
 
     // 点击量
     override fun popularMangaRequest(page: Int): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&search_type=&comic_sort=&orderby=click&search_key=&platformname=android&productname=smh")
     }
 
@@ -100,9 +88,6 @@ class Zongerzysealegend : HttpSource() {
 
     // 按更新
     override fun latestUpdatesRequest(page: Int): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=$page&search_type=&comic_sort=&orderby=date&search_key=&platformname=android&productname=smh")
     }
 
@@ -171,9 +156,6 @@ class Zongerzysealegend : HttpSource() {
     }
 
     override fun pageListParse(response: Response): List<Page> {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         val url = response.request().url().toString()
         var requestUrl = response.request().url().toString().split("isAddPayImage=")[1]
         val page = url.split("&pages=")[1].split("&isAddPayImage=")[0].toInt()
@@ -190,10 +172,6 @@ class Zongerzysealegend : HttpSource() {
 
         for (i in start_num until end_num + 1) {
             arrList.add(Page(i, "", "http://mhpic.$chapter_domain$pageBaseurl1$i$pageBaseurl2"))
-        }
-        if (requestUrl.equals("1") || end_num > 70) {
-            arrList.add(Page(end_num + 1, "", weChart_Image))
-            arrList.add(Page(end_num + 2, "", aliPay_Image))
         }
         return arrList
     }
@@ -213,9 +191,6 @@ class Zongerzysealegend : HttpSource() {
 
     // 查询及分类查询
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        if (accessControl()) {
-            throw Exception("网站不可用 : 404")
-        }
         if (query != "") {
             return jsonGet("https://getconfig-globalapi.yyhao.com/app_api/v5/getsortlist/?page=1&orderby=click&search_type=&comic_sort=&search_key=$query&size=21&young_mode=0&platformname=android&productname=smh")
         } else {
