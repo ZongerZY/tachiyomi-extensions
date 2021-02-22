@@ -40,7 +40,7 @@ import uy.kohesive.injekt.api.get
 @Nsfw
 class Jinmantiantang : ConfigurableSource, ParsedHttpSource() {
 
-    override val baseUrl: String = "https://18comic.bet" // 172.64.4.100 220ms
+    override val baseUrl: String = "https://18comic1.one" // 172.64.4.100 220ms
     override val lang: String = "zh"
     override val name: String = "禁漫天堂"
     override val supportsLatest: Boolean = true

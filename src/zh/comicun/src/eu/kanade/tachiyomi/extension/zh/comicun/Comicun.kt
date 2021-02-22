@@ -54,7 +54,7 @@ class Comicun : HttpSource() {
 
     private fun dataHtmlInterceptor(chain: Interceptor.Chain): Response {
         val url = chain.request().url().toString()
-        return if (!url.startsWith("https://img.comicun.com")) {
+        return if (!url.startsWith("https://img.k886.net")) {
             client2.newCall(chain.request()).execute()
         } else {
             chain.proceed(chain.request())
@@ -82,7 +82,7 @@ class Comicun : HttpSource() {
         var document = Jsoup.parseBodyFragment(body)
 
         title = document.select("div.w980.mt10.clearfix div.intro_l div.title h1").text()
-        thumbnail_url = document.select("div.w980.mt10.clearfix div.intro_l div.info_cover p.cover img.pic").attr("src")
+        thumbnail_url = document.select("div.w980.mt10.clearfix div.intro_l div.info_cover p.cover img.pic").attr("src").replace("img.comicun.com", "img.k886.net")
         author = document.select("div.w980.mt10.clearfix div.intro_l div.info p.w260").get(1).select("a[itemprop=author]").text()
         artist = "Tachiyomi:ZongerZY"
         status = if (document.select("div.w980.mt10.clearfix div.intro_l div.info p.w260").get(2).select("a").text().contains("完結")) 2 else 1
@@ -128,7 +128,7 @@ class Comicun : HttpSource() {
 
     override fun imageUrlParse(response: Response): String {
         val body = response.body()!!.string()
-        return Jsoup.parseBodyFragment(body).select("#ComicPic").attr("src")
+        return Jsoup.parseBodyFragment(body).select("#ComicPic").attr("src").replace("img.comicun.com", "img.k886.net")
     }
 
     override fun searchMangaParse(response: Response): MangasPage {
@@ -139,7 +139,7 @@ class Comicun : HttpSource() {
         for (mangaElement in mangasElements) {
             mangas.add(SManga.create().apply {
                 title = mangaElement.select("dl dt a").text()
-                thumbnail_url = mangaElement.select("p.fl.cover a.pic img").attr("src")
+                thumbnail_url = mangaElement.select("p.fl.cover a.pic img").attr("src").replace("img.comicun.com", "img.k886.net")
                 url = mangaElement.select("p.fl.cover a.pic").attr("href").replace(baseUrl, baseIP[(0..2).random()])
             })
         }

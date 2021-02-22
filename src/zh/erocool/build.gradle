@@ -2,10 +2,10 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 ext {
-    extName = 'Jinmanzhijia'
-    pkgNameSuffix = 'zh.jinmanzhijia'
-    extClass = '.Jinmanzhijia'
-    extVersionCode = 2
+    extName = 'Erocool'
+    pkgNameSuffix = 'zh.erocool'
+    extClass = '.Erocool'
+    extVersionCode = 1
     libVersion = '1.2'
 }
 

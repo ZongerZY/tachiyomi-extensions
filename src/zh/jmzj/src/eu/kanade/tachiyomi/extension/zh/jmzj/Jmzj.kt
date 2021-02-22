@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.zh.jinmanzhijia
+package eu.kanade.tachiyomi.extension.zh.jmzj
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -26,10 +26,10 @@ import okhttp3.Response
 import okhttp3.ResponseBody
 import org.jsoup.Jsoup
 
-class Jinmanzhijia : HttpSource() {
+class Jmzj : HttpSource() {
 
-    override val name = "Jmzj(禁漫之家)"
     override val baseUrl = ""
+    override val name = "Jmzj(禁漫之家)"
     override val lang = "zh"
     override val supportsLatest = true
 
